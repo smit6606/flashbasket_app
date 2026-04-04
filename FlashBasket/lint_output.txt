@@ -1,0 +1,211 @@
+
+> flashbasket@0.0.1 lint
+> eslint .
+
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/AddMoneyModal.js
+  74:41  warning  Inline style: { opacity: 'amount ? 1 : 0.6' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/AddressCard.js
+  13:9  warning  Inline style: { borderWidth: 'isSelected ? 2 : 1' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/AddressForm.js
+   34:29  warning  Inline style: {
+  borderColor: "type === t ? theme.colors.primary : 'transparent'",
+  borderWidth: 1
+}  react-native/no-inline-styles
+   88:54  warning  Inline style: { flex: 1, marginRight: 8 }                                                               react-native/no-inline-styles
+   98:54  warning  Inline style: { flex: 1, marginLeft: 8 }                                                                react-native/no-inline-styles
+  125:26  warning  Inline style: { height: 40 }                                                                            react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/AppHeader.js
+   1:17  warning  'useState' is defined but never used       no-unused-vars
+  14:11  warning  'user' is assigned a value but never used  no-unused-vars
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/BannerCarousel.js
+  64:15  warning  Inline style: { width: 'activeIndex === index ? 20 : 8' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/BottomCartBar.js
+   2:52  warning  'Animated' is defined but never used          no-unused-vars
+  14:44  warning  Inline style: { backgroundColor: '#E3F2FD' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/ButtonPrimary.js
+   7:3  warning  'interpolateColor' is defined but never used                      no-unused-vars
+  56:9  warning  Inline style: { borderWidth: "variant === 'outline' ? 1.5 : 0" }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/CategoryFilterRow.js
+  41:17  warning  Inline style: { fontWeight: "activeCategory === category ? 'bold' : '500'" }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/CategorySidebar.js
+  24:29  warning  Inline style: { borderLeftWidth: 4 }                       react-native/no-inline-styles
+  39:17  warning  Inline style: { fontWeight: "isActive ? 'bold' : '600'" }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/CategoryTabs.js
+  16:37  warning  Inline style: { borderBottomWidth: 1 }  react-native/no-inline-styles
+  22:37  warning  Inline style: { borderBottomWidth: 3 }  react-native/no-inline-styles
+  30:39  warning  Inline style: { fontWeight: 'bold' }    react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/FAQAccordion.js
+  8:3  warning  'Platform' is defined but never used   no-unused-vars
+  9:3  warning  'UIManager' is defined but never used  no-unused-vars
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/FilterModal.js
+  3:8  warning  'Icon' is defined but never used  no-unused-vars
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/ImageSlider.js
+   4:3   warning  'Text' is defined but never used                           no-unused-vars
+  61:15  warning  Inline style: { width: 'activeIndex === index ? 20 : 8' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/LocationModal.js
+  95:34  warning  Inline style: { height: 40 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/MapPreview.js
+  27:52  warning  Inline style: { backgroundColor: 'rgba(0,0,0,0.1)' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/OTPInput.js
+  1:35  warning  'useEffect' is defined but never used  no-unused-vars
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/OrderSummary.js
+   2:34  warning  'ScrollView' is defined but never used   no-unused-vars
+  56:37  warning  Inline style: { borderStyle: 'dashed' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/PaymentOption.js
+  13:9  warning  Inline style: { borderWidth: 'selected ? 2 : 1' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/SearchBar.js
+  69:33  warning  Inline style: { position: 'absolute', left: 0 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/SortModal.js
+  1:17  warning  'useState' is defined but never used  no-unused-vars
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/StickyActionBar.js
+  12:36  warning  Inline style: { backgroundColor: '#F3F4F6' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/SuccessAnimation.js
+  24:6  error  React Hook useEffect has missing dependencies: 'opacityValue' and 'scaleValue'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/common/ProductCardSkeleton.js
+  15:50  warning  Inline style: { marginBottom: 8 }   react-native/no-inline-styles
+  16:50  warning  Inline style: { marginBottom: 12 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/components/common/Skeleton.js
+  8:9  error  The 'animatedValue' object construction makes the dependencies of useEffect Hook (at line 20) change on every render. To fix this, wrap the initialization of 'animatedValue' in its own useMemo() Hook  react-hooks/exhaustive-deps
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/context/UserContext.js
+  10:28  warning  'user' is assigned a value but never used                                                                         no-unused-vars
+  27:6   error    React Hook useEffect has a missing dependency: 'loadAddresses'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/navigation/BottomTabNavigator.js
+   3:10  warning  'getFocusedRouteNameFromRoute' is defined but never used                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+  41:23  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “BottomTabNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  50:23  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “BottomTabNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  59:23  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “BottomTabNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  68:23  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “BottomTabNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+  77:23  warning  Do not define components during render. React will see a new component type on every render and destroy the entire subtree’s DOM nodes and state (https://reactjs.org/docs/reconciliation.html#elements-of-different-types). Instead, move this component definition out of the parent component “BottomTabNavigator” and pass data as props. If you want to allow component creation in props, set allowAsProps option to true  react/no-unstable-nested-components
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/AddAddressScreen.js
+  75:58  warning  Inline style: { backgroundColor: 'rgba(0,0,0,0.3)' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/AddressScreen.js
+  49:54  warning  Inline style: { flex: 1 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/BuyAgainScreen.js
+  62:22  warning  Inline style: { width: 24 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/CartScreen.js
+    1:17  warning  'useState' is defined but never used                 no-unused-vars
+    2:75  warning  'ActivityIndicator' is defined but never used        no-unused-vars
+   18:11  warning  'theme' is assigned a value but never used           no-unused-vars
+   20:18  warning  Inline style: { padding: 16 }                        react-native/no-inline-styles
+   21:49  warning  Inline style: { marginBottom: 16 }                   react-native/no-inline-styles
+   22:50  warning  Inline style: { marginBottom: 16 }                   react-native/no-inline-styles
+   23:50  warning  Inline style: { marginBottom: 16 }                   react-native/no-inline-styles
+   31:42  warning  'removeFromCart' is assigned a value but never used  no-unused-vars
+   51:5   warning  Unexpected alert                                     no-alert
+   56:7   warning  Unexpected alert                                     no-alert
+  162:24  warning  Inline style: { height: 120 }                        react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/CategoriesScreen.js
+  130:79  warning  Inline style: { flex: 1 }  react-native/no-inline-styles
+  172:54  warning  Inline style: { flex: 1 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/CreateProfileScreen.js
+  38:45  warning  Inline style: { paddingBottom: 0 }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/FreshScreen.js
+   1:38  warning  'useMemo' is defined but never used  no-unused-vars
+  64:22  warning  Inline style: { width: 24 }          react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/HomeScreen.js
+    2:16  warning  'Text' is defined but never used                                           no-unused-vars
+    2:56  warning  'Image' is defined but never used                                          no-unused-vars
+   13:8   warning  'Icon' is defined but never used                                           no-unused-vars
+   15:9   warning  'width' is assigned a value but never used                                 no-unused-vars
+   25:11  warning  'selectedAddress' is assigned a value but never used                       no-unused-vars
+  134:22  warning  Inline style: { flex: 1, justifyContent: 'center', alignItems: 'center' }  react-native/no-inline-styles
+  166:24  warning  Inline style: { height: 150 }                                              react-native/no-inline-styles
+  170:29  warning  Inline style: { position: 'absolute', bottom: 0, left: 0, right: 0 }       react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/LoginScreen.js
+   7:8   warning  'AuthHeader' is defined but never used  no-unused-vars
+  35:45  warning  Inline style: { paddingBottom: 0 }      react-native/no-inline-styles
+  69:26  warning  Inline style: { fontWeight: 'bold' }    react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/MapScreen.js
+    3:19  warning  'Marker' is defined but never used                                                                                            no-unused-vars
+    9:20  warning  'FadeIn' is defined but never used                                                                                            no-unused-vars
+   25:6   error    React Hook useEffect has a missing dependency: 'requestLocationPermission'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  125:18  warning  Inline style: { marginTop: 16 }                                                                                               react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/OTPScreen.js
+  63:45  warning  Inline style: { paddingBottom: 0 }    react-native/no-inline-styles
+  73:32  warning  Inline style: { fontWeight: 'bold' }  react-native/no-inline-styles
+  85:42  warning  Inline style: { fontWeight: 'bold' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/OrderDetailsScreen.js
+   16:6   error    React Hook useEffect has a missing dependency: 'fetchOrderDetails'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   41:47  warning  Inline style: { justifyContent: 'center' }                                                                            react-native/no-inline-styles
+   49:47  warning  Inline style: { justifyContent: 'center', alignItems: 'center' }                                                      react-native/no-inline-styles
+   67:22  warning  Inline style: { width: 24 }                                                                                           react-native/no-inline-styles
+   92:21  warning  Inline style: { fontWeight: "status.completed ? 'bold' : 'normal'" }                                                  react-native/no-inline-styles
+  123:46  warning  Inline style: { marginBottom: 12 }                                                                                    react-native/no-inline-styles
+  137:46  warning  Inline style: { marginBottom: 16 }                                                                                    react-native/no-inline-styles
+  160:46  warning  Inline style: { marginBottom: 16 }                                                                                    react-native/no-inline-styles
+  177:41  warning  Inline style: { borderWidth: 1 }                                                                                      react-native/no-inline-styles
+  178:26  warning  Unexpected alert                                                                                                      no-alert
+  183:22  warning  Inline style: { height: 40 }                                                                                          react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/OrderHistoryScreen.js
+   2:73  warning  'Image' is defined but never used                    no-unused-vars
+  61:22  warning  Inline style: { width: 24 }                          react-native/no-inline-styles
+  65:22  warning  Inline style: { flex: 1, justifyContent: 'center' }  react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/PaymentScreen.js
+   19:36  warning  'clearCart' is assigned a value but never used  no-unused-vars
+   36:7   warning  Unexpected alert                                no-alert
+   52:7   warning  Unexpected alert                                no-alert
+   68:22  warning  Inline style: { width: 24 }                     react-native/no-inline-styles
+   99:46  warning  Inline style: { marginBottom: 16 }              react-native/no-inline-styles
+  123:22  warning  Inline style: { height: 100 }                   react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/ProductDetailsScreen.js
+  10:3   warning  'Platform' is defined but never used                                                                                    no-unused-vars
+  11:3   warning  'UIManager' is defined but never used                                                                                   no-unused-vars
+  74:6   error    React Hook useEffect has a missing dependency: 'addToRecentlyViewed'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  86:36  warning  Inline style: { backgroundColor: '#fff' }                                                                               react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/screens/WalletScreen.js
+    2:64  warning  'Animated' is defined but never used                                            no-unused-vars
+   12:41  warning  Inline style: { borderBottomWidth: 'isLast ? 0 : 1' }                           react-native/no-inline-styles
+   13:35  warning  Inline style: { backgroundColor: "type === 'CREDIT' ? '#E8F5E9' : '#FFEBEE'" }  react-native/no-inline-styles
+   24:45  warning  Inline style: { color: "type === 'CREDIT' ? '#4CAF50' : theme.colors.text" }    react-native/no-inline-styles
+   42:7   warning  Unexpected alert                                                                no-alert
+   61:20  warning  Inline style: { flex: 1, justifyContent: 'center' }                             react-native/no-inline-styles
+  121:28  warning  Inline style: { marginTop: 12 }                                                 react-native/no-inline-styles
+  127:47  warning  Inline style: { marginLeft: 16, marginBottom: 12 }                              react-native/no-inline-styles
+
+/home/dev-05/FlashBasket_Application/FlashBasket/src/services/locationService.js
+  4:7  warning  'GOOGLE_MAPS_API_KEY' is assigned a value but never used  no-unused-vars
+
+✖ 115 problems (6 errors, 109 warnings)
+

@@ -1,0 +1,10 @@
+node_modules/
+android/build/
+ios/build/
+.env*
+*.keystore
+*.jks
+*.log
+coverage/
+dist/
+.DS_Store

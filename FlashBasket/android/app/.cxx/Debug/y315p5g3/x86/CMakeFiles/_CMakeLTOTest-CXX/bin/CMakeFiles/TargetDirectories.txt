@@ -1,0 +1,4 @@
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/foo.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/boo.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/edit_cache.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86/CMakeFiles/_CMakeLTOTest-CXX/bin/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,43 @@
+# FlashBasket Full-Stack .gitignore
+
+# React Native
+**/android/build/
+**/android/app/build/
+**/android/.gradle/
+**/android/local.properties
+
+# APK / AAB
+**/*.apk
+**/*.aab
+
+# iOS
+**/ios/build/
+**/ios/Pods/
+
+# Node
+node_modules/
+**/node_modules/
+
+# Logs
+**/*.log
+
+# Env
+**/.env
+
+# OS & System
+.DS_Store
+Thumbs.db
+**/.DS_Store
+**/Thumbs.db
+
+# IDEs & Editors
+.vscode/
+.idea/
+**/.vscode/
+**/.idea/
+
+# General Build & Coverage
+dist/
+build/
+coverage/
+node_modules/
