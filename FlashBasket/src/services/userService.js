@@ -34,6 +34,10 @@ const userService = {
     return api.delete(`/address/${id}`);
   },
 
+  setDefaultAddress: async (id) => {
+    return api.put(`/address/${id}/default`);
+  },
+
   getWalletInfo: async () => {
     return api.get('/wallet');
   },

@@ -7,12 +7,17 @@ import CategorySidebar from '../components/CategorySidebar';
 import ProductCard from '../components/ProductCard';
 import FilterModal from '../components/FilterModal';
 import SortModal from '../components/SortModal';
+import DynamicCartBar from '../components/DynamicCartBar';
 
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
+import { useCart } from '../redux/CartContext';
 
-const CategoriesScreen = () => {
+const CategoriesScreen = ({ route, navigation }) => {
   const { theme } = useTheme();
+  const { getCartCount, getCartTotal } = useCart();
+  const initialCategoryId = route?.params?.categoryId;
+
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
@@ -33,6 +38,13 @@ const CategoriesScreen = () => {
     fetchCategories();
   }, []);
 
+  // Sync active category when navigating with params
+  useEffect(() => {
+    if (initialCategoryId) {
+      setActiveCategoryId(initialCategoryId);
+    }
+  }, [initialCategoryId]);
+
   useEffect(() => {
     if (activeCategoryId) {
       fetchProducts(activeCategoryId);
@@ -44,7 +56,11 @@ const CategoriesScreen = () => {
       const response = await categoryService.getAllCategories();
       const catList = response.data || [];
       setCategories(catList);
-      if (catList.length > 0) {
+      
+      // Priority: route param > previously active > first category
+      if (initialCategoryId) {
+        setActiveCategoryId(initialCategoryId);
+      } else if (!activeCategoryId && catList.length > 0) {
         setActiveCategoryId(catList[0].id);
       }
     } catch (error) {
@@ -113,11 +129,12 @@ const CategoriesScreen = () => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={[styles.topBar, { backgroundColor: theme.colors.white }]}>
+      {/* Top Search Area - Zepto Style */}
+      <View style={[styles.topBar, { backgroundColor: theme.colors.white, borderBottomColor: theme.colors.border }]}>
         <View style={[styles.searchContainer, { backgroundColor: theme.colors.surface }]}>
           <Icon name="search-outline" size={20} color={theme.colors.textSecondary} />
           <TextInput
-            placeholder={`Search in ${activeCategoryName}...`}
+            placeholder={`Search for products in ${activeCategoryName}...`}
             style={[styles.searchInput, { color: theme.colors.text }]}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -126,9 +143,12 @@ const CategoriesScreen = () => {
         </View>
       </View>
 
-      <View style={styles.content}>
+      <View style={{ flex: 1 }}>
+        <View style={styles.content}>
         {loading ? (
-          <ActivityIndicator size="large" color={theme.colors.primary} style={{ flex: 1 }} />
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
         ) : (
           <>
             <CategorySidebar
@@ -137,7 +157,16 @@ const CategoriesScreen = () => {
               onCategoryChange={setActiveCategoryId}
             />
     
-            <View style={styles.mainContent}>
+            <View style={[styles.mainContent, { backgroundColor: theme.colors.white }]}>
+              {/* Category Sub-Header */}
+              <View style={[styles.categoryHeader, { borderBottomColor: theme.colors.border }]}>
+                <Text style={[styles.categoryTitle, { color: theme.colors.text }]}>{activeCategoryName}</Text>
+                <Text style={[styles.productCount, { color: theme.colors.textSecondary }]}>
+                  {filteredProducts.length} Products
+                </Text>
+              </View>
+
+              {/* Advanced Filter Row */}
               <View style={[styles.filterSortRow, { borderBottomColor: theme.colors.border }]}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => setFilterVisible(true)}>
                   <View style={styles.iconBadgeWrapper}>
@@ -158,7 +187,7 @@ const CategoriesScreen = () => {
               </View>
     
               {productsLoading ? (
-                <View style={[styles.emptyContainer, { flex: 1 }]}>
+                <View style={styles.centerContainer}>
                   <ActivityIndicator size="large" color={theme.colors.primary} />
                 </View>
               ) : (
@@ -168,19 +197,25 @@ const CategoriesScreen = () => {
                   numColumns={2}
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.listContainer}
+                  columnWrapperStyle={styles.columnWrapper}
                   renderItem={({ item }) => (
                     <View style={styles.productWrapper}>
-                      <ProductCard product={item} />
+                      <ProductCard 
+                        product={item} 
+                        width="100%" 
+                        variant="modern"
+                        style={{ marginHorizontal: 0, marginBottom: 12 }} 
+                      />
                     </View>
                   )}
                   ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                      <Icon name="basket-outline" size={60} color={theme.colors.textSecondary} />
-                      <Text style={[styles.emptyText, { color: theme.colors.textSecondary, marginTop: 12 }]}>
-                        No Products Available in this Category
+                      <Icon name="basket-outline" size={60} color={theme.colors.textTertiary} />
+                      <Text style={[styles.emptyText, { color: theme.colors.text }]}>
+                        No Products Found
                       </Text>
-                      <Text style={[styles.emptySubtitle, { color: theme.colors.textTertiary }]}>
-                        Everything you see here is added by the admin.
+                      <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
+                        Try adjusting your filters or search query.
                       </Text>
                     </View>
                   }
@@ -191,6 +226,14 @@ const CategoriesScreen = () => {
         )}
       </View>
 
+      <DynamicCartBar 
+        visible={getCartCount() > 0} 
+        cartCount={getCartCount()} 
+        cartTotal={getCartTotal()} 
+        onCartPress={() => navigation.navigate('CartScreen')} 
+      />
+    </View>
+
       <FilterModal visible={filterVisible} onClose={() => setFilterVisible(false)} filters={filters} onApply={setFilters} />
       <SortModal visible={sortVisible} onClose={() => setSortVisible(false)} currentSort={currentSort} onSortSelect={(val) => { setCurrentSort(val); setSortVisible(false); }} />
     </SafeAreaView>
@@ -199,23 +242,66 @@ const CategoriesScreen = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  topBar: { paddingHorizontal: 16, paddingVertical: 12, elevation: 2, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, zIndex: 10 },
-  searchContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, height: 45, borderRadius: 12 },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, fontWeight: '500' },
+  topBar: { 
+    paddingHorizontal: 16, 
+    paddingVertical: 12, 
+    borderBottomWidth: 1,
+    zIndex: 10,
+  },
+  searchContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 14, 
+    height: 48, 
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, fontWeight: '600' },
   content: { flex: 1, flexDirection: 'row' },
-  mainContent: { flex: 1, backgroundColor: '#fff' },
-  filterSortRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
+  centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  mainContent: { flex: 1 },
+  categoryHeader: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+  },
+  categoryTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
+  productCount: { fontSize: 12, fontWeight: '700' },
+  filterSortRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingVertical: 12, 
+    borderBottomWidth: 1,
+    backgroundColor: '#fafafa',
+  },
   actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   iconBadgeWrapper: { position: 'relative' },
-  filterBadge: { position: 'absolute', top: -8, right: -8, width: 14, height: 14, borderRadius: 7, justifyContent: 'center', alignItems: 'center' },
-  badgeText: { color: '#fff', fontSize: 8, fontWeight: 'bold' },
-  actionText: { fontSize: 14, fontWeight: '600', marginLeft: 8 },
+  filterBadge: { 
+    position: 'absolute', 
+    top: -6, 
+    right: -6, 
+    width: 15, 
+    height: 15, 
+    borderRadius: 7.5, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  badgeText: { color: '#fff', fontSize: 8, fontWeight: '900' },
+  actionText: { fontSize: 13, fontWeight: '700', marginLeft: 8 },
   divider: { width: 1, height: 20 },
-  listContainer: { padding: 12, paddingBottom: 100 },
-  productWrapper: { flex: 1, padding: 4 },
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100, paddingHorizontal: 20 },
-  emptyText: { fontSize: 16, fontWeight: 'bold', textAlign: 'center' },
-  emptySubtitle: { fontSize: 13, textAlign: 'center', marginTop: 4 },
+  listContainer: { paddingVertical: 12, paddingHorizontal: 8, paddingBottom: 120 },
+  columnWrapper: { justifyContent: 'space-between' },
+  productWrapper: { width: '49%', marginBottom: 6 },
+  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100, paddingHorizontal: 40 },
+  emptyText: { fontSize: 17, fontWeight: '800', marginTop: 16, textAlign: 'center' },
+  emptySubtitle: { fontSize: 13, textAlign: 'center', marginTop: 6, lineHeight: 18 },
+
 });
 
 export default CategoriesScreen;

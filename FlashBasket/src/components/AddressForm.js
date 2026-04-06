@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
 
 const AddressForm = ({ initialData, onSubmit, onCancel }) => {
@@ -10,6 +10,7 @@ const AddressForm = ({ initialData, onSubmit, onCancel }) => {
     const [landmark, setLandmark] = useState(initialData?.landmark || '');
     const [city, setCity] = useState(initialData?.city || '');
     const [pincode, setPincode] = useState(initialData?.pincode || '');
+    const [phone, setPhone] = useState(initialData?.phone || '');
 
     const handleSubmit = () => {
         onSubmit({
@@ -19,11 +20,21 @@ const AddressForm = ({ initialData, onSubmit, onCancel }) => {
             landmark,
             city,
             pincode,
+            phone,
         });
     };
 
+    const handleTypeSelect = (t) => {
+        const types = ['Home', 'Office', 'Other', 'Work'];
+        setType(t);
+        // If name is empty or just matches an old type default, update it to the new type
+        if (!name || types.includes(name)) {
+            setName(t);
+        }
+    };
+
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Save As</Text>
             <View style={styles.typeRow}>
                 {['Home', 'Office', 'Other'].map((t) => (
@@ -37,7 +48,7 @@ const AddressForm = ({ initialData, onSubmit, onCancel }) => {
                                 borderWidth: 1,
                             }
                         ]}
-                        onPress={() => setType(t)}
+                        onPress={() => handleTypeSelect(t)}
                     >
                         <Text style={[
                             styles.typeText, 
@@ -108,6 +119,19 @@ const AddressForm = ({ initialData, onSubmit, onCancel }) => {
                 </View>
             </View>
 
+            <View style={styles.inputContainer}>
+                <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Mobile Number</Text>
+                <TextInput
+                    style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
+                    placeholder="10 digit mobile number"
+                    placeholderTextColor={theme.colors.textSecondary}
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                    value={phone}
+                    onChangeText={setPhone}
+                />
+            </View>
+
             <TouchableOpacity 
                 style={[styles.submitButton, { backgroundColor: theme.colors.primary }]}
                 onPress={handleSubmit}
@@ -123,7 +147,7 @@ const AddressForm = ({ initialData, onSubmit, onCancel }) => {
             </TouchableOpacity>
             
             <View style={{ height: 40 }} />
-        </ScrollView>
+        </View>
     );
 };
 

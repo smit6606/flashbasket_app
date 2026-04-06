@@ -1,38 +1,36 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const BottomCartBar = ({ visible, count, amount, onPress, scrollY }) => {
+const { width } = Dimensions.get('window');
+
+const BottomCartBar = ({ visible, count, amount, onPress }) => {
   const { theme } = useTheme();
 
-  // Animation for scrolling behavior (optional if handled by parent but good to keep)
-  if (!visible) return null;
+  if (!visible || count === 0) return null;
 
   return (
     <View style={styles.outerContainer}>
-      <View style={[styles.promoContainer, { backgroundColor: '#E3F2FD' }]}>
-         <Text style={[styles.promoText, { color: theme.colors.primary }]}>
-           Add items worth ₹120 to get FREE gift
-         </Text>
-      </View>
       <TouchableOpacity 
-        style={[styles.container, { backgroundColor: theme.colors.primary }]}
+        style={[styles.container, { backgroundColor: '#27ae60' }]}
         onPress={onPress}
         activeOpacity={0.9}
       >
         <View style={styles.leftSection}>
-          <View style={styles.countBadge}>
-            <Text style={[styles.countText, { color: theme.colors.primary }]}>{count} ITEMS</Text>
+          <View style={styles.badge}>
+            <Text style={[styles.badgeText, { color: '#27ae60' }]}>{count}</Text>
           </View>
-          <View>
+          <View style={styles.priceContainer}>
             <Text style={styles.amountText}>₹{amount}</Text>
+            <Text style={styles.viewCartInfoText}>View Cart</Text>
           </View>
         </View>
 
         <View style={styles.rightSection}>
-          <Text style={styles.viewCartText}>View Cart</Text>
-          <Icon name="chevron-forward" size={20} color={theme.colors.white} />
+          <MIcon name="basket" size={24} color="#FFF" />
+          <Icon name="chevron-forward" size={22} color="#FFF" />
         </View>
       </TouchableOpacity>
     </View>
@@ -41,68 +39,62 @@ const BottomCartBar = ({ visible, count, amount, onPress, scrollY }) => {
 
 const styles = StyleSheet.create({
   outerContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
-    zIndex: 100,
-  },
-  promoContainer: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-    alignItems: 'center',
-    marginBottom: -4,
-  },
-  promoText: {
-    fontSize: 12,
-    fontWeight: 'bold',
+    width: width,
+    paddingHorizontal: 12,
+    marginBottom: 10,
   },
   container: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 20,
+    height: 70, // Premium large height
+    borderRadius: 16,
     elevation: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowRadius: 8,
   },
   leftSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 15,
   },
-  countBadge: {
+  badge: {
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    borderWidth: 1.5,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
-  countText: {
-    fontSize: 10,
-    fontWeight: 'bold',
+  badgeText: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  priceContainer: {
+    justifyContent: 'center',
   },
   amountText: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  viewCartInfoText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    marginTop: -2,
   },
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  viewCartText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 4,
+    gap: 6,
   },
 });
 

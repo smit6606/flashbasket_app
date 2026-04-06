@@ -97,11 +97,6 @@ export default function Topbar({ setSidebarOpen }) {
   const navigate = useNavigate();
   const { toggleColorMode } = useColorMode();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <GlassAppBar position="sticky" elevation={0}>
       <Toolbar sx={{ height: 80, px: { xs: 2, sm: 4 } }}>
@@ -140,25 +135,6 @@ export default function Topbar({ setSidebarOpen }) {
                 {theme.palette.mode === 'dark' ? <LightModeIcon fontSize="small" /> : <DarkModeIcon fontSize="small" />}
               </IconButton>
             </Tooltip>
-
-            <Tooltip title="Notifications">
-              <IconButton 
-                sx={{ 
-                  bgcolor: alpha(theme.palette.primary.main, 0.08), 
-                  color: 'primary.main',
-                  borderRadius: '12px',
-                  '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.12) } 
-                }}
-              >
-                <Badge 
-                  variant="dot"
-                  color="error"
-                  overlap="circular"
-                >
-                  <BellIcon fontSize="small" />
-                </Badge>
-              </IconButton>
-            </Tooltip>
           </Box>
 
           <Box sx={{ width: '1px', height: '32px', bgcolor: 'divider', mx: 1, opacity: 0.5, display: { xs: 'none', sm: 'block' } }} />
@@ -186,20 +162,6 @@ export default function Topbar({ setSidebarOpen }) {
             >
               AD
             </Avatar>
-
-            <Tooltip title="Sign Out">
-              <IconButton 
-                onClick={handleLogout} 
-                sx={{ 
-                  color: 'error.main', 
-                  bgcolor: alpha(theme.palette.error.main, 0.08),
-                  borderRadius: '12px',
-                  '&:hover': { bgcolor: 'error.main', color: '#fff' } 
-                }}
-              >
-                <LogoutIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
           </Box>
         </Box>
       </Toolbar>

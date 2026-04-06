@@ -24,7 +24,8 @@ class OrderController {
   async getOrderById(req, res) {
     try {
       const { id } = req.params;
-      const result = await orderService.getOrderById(req.user.id, id);
+      const userId = req.user.role === 'admin' ? null : req.user.id;
+      const result = await orderService.getOrderById(id, userId);
       if (!result) {
         return responseHandler.notFound(res, messages.ORDER.NOT_FOUND);
       }
@@ -40,6 +41,17 @@ class OrderController {
       const { status } = req.body;
       const result = await orderService.updateOrderStatus(id, status);
       return responseHandler.success(res, messages.ORDER.UPDATE_SUCCESS, result);
+    } catch (error) {
+      return responseHandler.badRequest(res, error.message || messages.COMMON.BAD_REQUEST);
+    }
+  }
+
+  async verifyOTP(req, res) {
+    try {
+      const { id } = req.params;
+      const { otp } = req.body;
+      const result = await orderService.verifyOrderOTP(id, otp);
+      return responseHandler.success(res, 'OTP Verified Successfully', result);
     } catch (error) {
       return responseHandler.badRequest(res, error.message || messages.COMMON.BAD_REQUEST);
     }

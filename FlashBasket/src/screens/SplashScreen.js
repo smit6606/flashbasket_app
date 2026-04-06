@@ -51,43 +51,37 @@ const SplashScreen = ({ navigation }) => {
 
     checkAuth();
   }, [navigation]);
-
   return (
-    // Medium Dark background for best readability of logo and text
-    <View style={[styles.container, { backgroundColor: '#1e272e' }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar 
-        backgroundColor="#1e272e" 
-        barStyle="light-content" 
+        backgroundColor={theme.colors.background}
+        barStyle={isDark ? "light-content" : "dark-content"} 
       />
       
       <View style={styles.content}>
         <Animated.View style={[
           styles.logoContainer, 
-          { transform: [{ scale: logoScale }] }
-        ]}>
-          <Icon name="basket-flash" size={100} color={theme.colors.primary} />
-        </Animated.View>
-
-        <Animated.Text style={[
-          styles.logoText, 
-          { opacity: textOpacity }
-        ]}>
-          Flash<Text style={{ color: theme.colors.primary }}>Basket</Text>
-        </Animated.Text>
-
-        <Animated.View style={[
-          styles.taglineContainer,
           { 
-            opacity: textOpacity,
-            transform: [{ translateY: taglineTranslate }]
+            transform: [{ scale: logoScale }],
+            opacity: textOpacity 
           }
         ]}>
-          <Text style={styles.taglineText}>Freshness in a Flash</Text>
+          <Icon name="lightning-bolt" size={100} color={theme.colors.primary} />
+          <View style={styles.basketIconOverlay}>
+            <Icon name="basket" size={40} color={theme.colors.text} />
+          </View>
+        </Animated.View>
+
+        <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: taglineTranslate }] }}>
+          <Text style={[styles.logoText, { color: theme.colors.text }]}>
+            Flash<Text style={{ color: theme.colors.primary }}>Basket</Text>
+          </Text>
+          <Text style={[styles.taglineText, { color: theme.colors.textSecondary }]}>Freshness in a Flash</Text>
         </Animated.View>
       </View>
       
       <View style={styles.footer}>
-        <Text style={styles.vLabel}>V 2.5 STABLE</Text>
+        <Text style={[styles.vLabel, { color: theme.colors.textSecondary, opacity: 0.5 }]}>V 2.5 STABLE</Text>
       </View>
     </View>
   );
@@ -103,32 +97,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoContainer: {
-    marginBottom: 20,
-    padding: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 40,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  basketIconOverlay: {
+    position: 'absolute',
+    bottom: -10,
+    right: -10,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
+    padding: 2,
   },
   logoText: {
-    fontSize: 48,
+    fontSize: 42,
     fontWeight: '900',
-    color: '#FFFFFF',
     letterSpacing: -1.5,
-  },
-  taglineContainer: {
-    marginTop: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    textAlign: 'center',
   },
   taglineText: {
-    fontSize: 14,
-    color: '#dfe6e9',
+    fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 3,
+    textAlign: 'center',
+    marginTop: 4,
   },
   footer: {
     position: 'absolute',
@@ -136,7 +129,6 @@ const styles = StyleSheet.create({
   },
   vLabel: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.3)',
     fontWeight: '800',
     letterSpacing: 3,
   },

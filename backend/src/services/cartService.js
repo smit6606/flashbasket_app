@@ -13,10 +13,10 @@ class CartService {
 
     if (!cart) {
       cart = await Cart.create({ userId });
-      return { success: true, data: { ...cart.toJSON(), items: [] } };
+      return { ...cart.toJSON(), items: [] };
     }
 
-    return { success: true, data: cart };
+    return cart;
   }
 
   async addToCart(userId, { productId, quantity = 1 }) {
@@ -31,29 +31,41 @@ class CartService {
       item = await CartItem.create({ cartId: cart.id, productId, quantity });
     }
 
-    return { success: true, message: 'Added to cart' };
+    return { cartId: cart.id, productId, quantity: item.quantity };
   }
 
   async updateCartItem(userId, itemId, quantity) {
     const item = await CartItem.findByPk(itemId, {
-      include: [{ model: Cart, include: [{ model: Cart, as: 'Cart', required: false }] }] // Actually check if belongs to user
+      include: [{ 
+        model: Cart, 
+        where: { userId }, // Security: Ensure item belongs to user
+        required: true 
+      }]
     });
-    // Simpler check for dev:
-    if (!item) throw new Error('Cart item not found');
+    
+    if (!item) throw new Error('Cart item not found or unauthorized');
     if (quantity <= 0) {
       await item.destroy();
     } else {
       item.quantity = quantity;
       await item.save();
     }
-    return { success: true, message: 'Cart updated' };
+    return true;
   }
 
   async removeFromCart(userId, itemId) {
     const item = await CartItem.findByPk(itemId);
     if (!item) throw new Error('Cart item not found');
     await item.destroy();
-    return { success: true, message: 'Removed from cart' };
+    return true;
+  }
+
+  async clearCart(userId) {
+    const cart = await Cart.findOne({ where: { userId } });
+    if (!cart) return true; // Already empty (or no cart)
+    
+    await CartItem.destroy({ where: { cartId: cart.id } });
+    return true;
   }
 }
 

@@ -2,12 +2,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
-import Icon from 'react-native-vector-icons/Ionicons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProductCard from '../components/ProductCard';
 import productService from '../services/productService';
+import categoryService from '../services/categoryService';
+import { useCart } from '../redux/CartContext';
+import DynamicCartBar from '../components/DynamicCartBar';
 
 const FreshScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const { getCartCount, getCartTotal } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,26 +25,26 @@ const FreshScreen = ({ navigation }) => {
       setLoading(true);
       setError(null);
       
-      const [productsData, categoriesData] = await Promise.all([
-        productService.getAllProducts(),
-        productService.getAllCategories()
+      const [productsRes, categoriesRes] = await Promise.all([
+        productService.getAllProducts({ limit: 100 }),
+        categoryService.getAllCategories()
       ]);
 
-      const allItems = productsData.products || [];
-      const categories = categoriesData.categories || [];
+      const allItems = productsRes.data?.data || productsRes.data || [];
+      const categoriesList = categoriesRes.data || [];
       
       // Target categories for Fresh 
-      const freshCategoryNames = ['fruits', 'vegetables', 'dairy', 'bakery'];
+      const freshCategoryNames = ['fruits', 'vegetables', 'dairy', 'bakery', 'fresh'];
       
-      const freshCategoryIds = categories
+      const freshCategoryIds = categoriesList
         .filter(c => freshCategoryNames.some(name => c.name.toLowerCase().includes(name)))
         .map(c => c.id);
 
       const freshItems = allItems
-        .filter(item => freshCategoryIds.includes(item.category_id))
+        .filter(item => freshCategoryIds.includes(item.categoryId))
         .map(item => ({ ...item, isFresh: true, lifespan: '2-3 Days' }));
 
-      // If mock data doesn't map perfectly, fallback to first 10 items
+      // Fallback if no fresh categories match
       if (freshItems.length === 0) {
         setProducts(allItems.slice(0, 10).map(item => ({ ...item, isFresh: true, lifespan: '2-3 Days' })));
       } else {
@@ -58,14 +62,16 @@ const FreshScreen = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
+          <Icon name="arrow-left" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.colors.text }]}>Fresh Deliveries</Text>
         <View style={{ width: 24 }} />
       </View>
 
+
+
       <View style={[styles.banner, { backgroundColor: theme.colors.primaryLight }]}>
-        <Icon name="leaf-outline" size={20} color={theme.colors.primary} />
+        <Icon name="leaf" size={20} color={theme.colors.primary} />
         <Text style={[styles.bannerText, { color: theme.colors.primary }]}>
           Short lifespan products (2-3 Days). Guaranteed fresh!
         </Text>
@@ -77,7 +83,7 @@ const FreshScreen = ({ navigation }) => {
         </View>
       ) : error ? (
         <View style={styles.center}>
-          <Icon name="alert-circle-outline" size={48} color={theme.colors.error} />
+          <Icon name="alert-circle" size={48} color={theme.colors.error} />
           <Text style={[styles.errorText, { color: theme.colors.error }]}>{error}</Text>
           <TouchableOpacity 
             style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
@@ -103,12 +109,19 @@ const FreshScreen = ({ navigation }) => {
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Icon name="leaf-outline" size={60} color={theme.colors.textSecondary} />
+              <Icon name="leaf" size={60} color={theme.colors.textSecondary} />
               <Text style={[styles.emptyText, { color: theme.colors.text }]}>No fresh products available.</Text>
             </View>
           }
         />
       )}
+      <DynamicCartBar 
+        visible={getCartCount() > 0} 
+        cartCount={getCartCount()} 
+        cartTotal={getCartTotal()} 
+        onCartPress={() => navigation.navigate('CartScreen')} 
+        onOfferPress={() => navigation.navigate('OfferScreen')}
+      />
     </SafeAreaView>
   );
 };

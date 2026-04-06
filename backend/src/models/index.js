@@ -12,6 +12,11 @@ const Wallet = require('./Wallet');
 const Favorite = require('./Favorite');
 const Coupon = require('./Coupon');
 const Subcategory = require('./Subcategory');
+const WalletTransaction = require('./WalletTransaction');
+
+// User & WalletTransaction
+User.hasMany(WalletTransaction, { foreignKey: 'userId', as: 'transactions' });
+WalletTransaction.belongsTo(User, { foreignKey: 'userId' });
 
 // User & Address
 User.hasMany(Address, { foreignKey: 'userId', as: 'addresses' });
@@ -82,6 +87,7 @@ module.exports = {
   Favorite,
   Coupon,
   Subcategory,
+  WalletTransaction,
   sequelize,
   Sequelize
 };

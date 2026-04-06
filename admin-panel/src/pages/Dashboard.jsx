@@ -153,9 +153,9 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const [statsRes, chartRes, recentRes] = await Promise.all([
-        api.get('/stats'),
-        api.get('/chart-data'),
-        api.get('/recent-orders')
+        api.get('stats'),
+        api.get('chart-data'),
+        api.get('recent-orders')
       ]);
 
       if (statsRes.data.success) setStats(statsRes.data.data);

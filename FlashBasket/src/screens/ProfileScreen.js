@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import { useAuth } from '../redux/AuthContext';
+import { useUser } from '../redux/UserContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -22,6 +23,7 @@ const ProfileOption = ({ icon, title, subtitle, onPress, theme, color = null }) 
 const ProfileScreen = ({ navigation }) => {
   const { theme, toggleTheme, isDark } = useTheme();
   const { user, logout } = useAuth();
+  const { wallet } = useUser();
 
   const handleLogout = () => {
     Alert.alert(
@@ -61,13 +63,23 @@ const ProfileScreen = ({ navigation }) => {
             <Text style={[styles.userName, { color: theme.colors.text }]}>{user?.name || 'Flash User'}</Text>
             <Text style={[styles.phoneNumber, { color: theme.colors.textSecondary }]}>+91 {user?.phone || '9876543210'}</Text>
           </View>
-          <TouchableOpacity style={[styles.editBadge, { backgroundColor: theme.colors.primaryLight }]}>
+          <TouchableOpacity 
+             style={[styles.editBadge, { backgroundColor: theme.colors.primaryLight }]}
+             onPress={() => navigation.navigate('EditProfileScreen')}
+          >
              <Icon name="pencil" size={16} color={theme.colors.primary} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>Account Settings</Text>
+          <ProfileOption 
+            icon="gift-outline" 
+            title="Invite & Earn" 
+            subtitle={user?.referralCode ? `Your Code: ${user.referralCode}` : 'Loading Code...'} 
+            onPress={() => Alert.alert('Your Referral Code', user?.referralCode ? `Share this code with friends to both earn ₹50:\n\n${user.referralCode}` : 'Please try again later')} 
+            theme={theme} 
+          />
           <ProfileOption 
             icon="map-marker-outline" 
             title="My Addresses" 
@@ -85,7 +97,7 @@ const ProfileScreen = ({ navigation }) => {
           <ProfileOption 
             icon="wallet-outline" 
             title="Flash Wallet" 
-            subtitle="View balance and add money" 
+            subtitle={`Balance: ₹${wallet?.balance || 0}`} 
             onPress={() => navigation.navigate('WalletScreen')} 
             theme={theme} 
           />
@@ -100,17 +112,9 @@ const ProfileScreen = ({ navigation }) => {
             onPress={toggleTheme} 
             theme={theme} 
           />
-          <ProfileOption 
-            icon="bell-outline" 
-            title="Notifications" 
-            theme={theme} 
-          />
         </View>
 
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.textSecondary }]}>Support & Legal</Text>
-          <ProfileOption icon="help-circle-outline" title="Help & Support" theme={theme} />
-          <ProfileOption icon="information-outline" title="About FlashBasket" theme={theme} />
           <ProfileOption 
             icon="logout-variant" 
             title="Logout" 

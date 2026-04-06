@@ -32,6 +32,7 @@ function App() {
               <Route path="categories" element={<Categories />} />
               <Route path="subcategories" element={<Subcategories />} />
               <Route path="orders" element={<Orders />} />
+              <Route path="past-orders" element={<Orders />} />
               <Route path="orders/:id" element={<OrderDetails />} />
               <Route path="users" element={<Users />} />
             </Route>

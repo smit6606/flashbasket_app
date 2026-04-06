@@ -26,7 +26,7 @@ export default function Users() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/users');
+      const res = await api.get('users');
       const data = responseHandler(res);
       setUsers(data.data || []);
     } catch (err) {

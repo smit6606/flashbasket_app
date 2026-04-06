@@ -37,6 +37,19 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('user', 'admin'),
     defaultValue: 'user',
+  },
+  referralCode: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
+  referredBy: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  firstOrderDelivered: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
   }
 }, {
   timestamps: true,

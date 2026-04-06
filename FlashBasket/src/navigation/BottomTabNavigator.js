@@ -7,7 +7,7 @@ import HomeScreen from '../screens/HomeScreen';
 import CategoriesScreen from '../screens/CategoriesScreen';
 import BuyAgainScreen from '../screens/BuyAgainScreen';
 import FreshScreen from '../screens/FreshScreen';
-import ProfileScreen from '../screens/ProfileScreen';
+
 
 const Tab = createBottomTabNavigator();
 
@@ -29,6 +29,7 @@ const BottomTabNavigator = () => {
           height: 60,
           paddingBottom: 8,
           display: ['Fresh', 'BuyAgain'].includes(route.name) ? 'none' : 'flex',
+
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSecondary,
@@ -63,16 +64,10 @@ const BottomTabNavigator = () => {
         name="Fresh"
         component={FreshScreen}
         options={{
-          tabBarIcon: (props) => <TabIcon name="leaf-outline" {...props} />,
+          tabBarIcon: (props) => <TabIcon name="leaf" {...props} />,
         }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: (props) => <TabIcon name="account-outline" {...props} />,
-        }}
-      />
+
     </Tab.Navigator>
   );
 };

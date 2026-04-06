@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import { useFavorites } from '../constants/FavoritesContext';
 import { useRecentlyViewed } from '../constants/RecentlyViewedContext';
+import { useCart } from '../redux/CartContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ImageSlider from '../components/ImageSlider';
@@ -62,6 +63,7 @@ const ProductDetailsScreen = ({ navigation, route }) => {
   const { theme } = useTheme();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { addToRecentlyViewed } = useRecentlyViewed();
+  const { cart, addToCart, updateQuantity, getCartCount } = useCart();
   const [isMoreInfoExpanded, setIsMoreInfoExpanded] = useState(false);
 
   const product = route.params?.product || DUMMY_PRODUCT;
@@ -73,9 +75,24 @@ const ProductDetailsScreen = ({ navigation, route }) => {
     }
   }, [product]);
 
+  const cartItem = cart?.items?.find(item => item.productId == product.id);
+  const quantity = cartItem ? cartItem.quantity : 0;
+
   const toggleMoreInfo = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsMoreInfoExpanded(!isMoreInfoExpanded);
+  };
+
+  const handleIncrease = () => {
+    if (cartItem) {
+      updateQuantity(cartItem.id, quantity + 1, product.id);
+    }
+  };
+
+  const handleDecrease = () => {
+    if (cartItem) {
+      updateQuantity(cartItem.id, quantity - 1, product.id);
+    }
   };
 
   return (
@@ -156,8 +173,12 @@ const ProductDetailsScreen = ({ navigation, route }) => {
 
       {/* Sticky Action Bar */}
       <StickyActionBar 
-        onGoToCart={() => navigation.navigate('Cart')}
-        onAddToCart={() => console.log('Added to cart')}
+        onGoToCart={() => navigation.navigate('CartScreen')}
+        onAddToCart={() => addToCart(product.id, 1, product)}
+        onIncrease={handleIncrease}
+        onDecrease={handleDecrease}
+        cartCount={getCartCount()}
+        quantity={quantity}
       />
     </SafeAreaView>
   );

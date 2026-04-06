@@ -26,7 +26,7 @@ export default function Categories() {
   const fetchCategories = async () => {
     try {
       setFetchLoading(true);
-      const res = await api.get('/categories');
+      const res = await api.get('categories');
       const data = responseHandler(res);
       setCategories(data.data || []);
     } catch (err) {
@@ -59,9 +59,9 @@ export default function Categories() {
     setLoading(true);
     try {
       if (editingId) {
-        await api.put(`/category/${editingId}`, formData);
+        await api.put(`category/${editingId}`, formData);
       } else {
-        await api.post('/category', formData);
+        await api.post('category', formData);
       }
       setIsModalOpen(false);
       fetchCategories();
@@ -75,7 +75,7 @@ export default function Categories() {
   const handleDelete = async (category) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       try {
-        await api.delete(`/category/${category.id}`);
+        await api.delete(`category/${category.id}`);
         fetchCategories();
       } catch (err) {
         alert(errorHandler(err));

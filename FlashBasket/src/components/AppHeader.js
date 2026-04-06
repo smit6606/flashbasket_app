@@ -1,55 +1,49 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../constants/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../redux/UserContext';
-import { useAuth } from '../redux/AuthContext';
-
-
 
 const AppHeader = ({ onLocationPress }) => {
   const { theme } = useTheme();
   const { selectedAddress, wallet } = useUser();
-  const { user } = useAuth();
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View style={[styles.container, { backgroundColor: '#fef0e3' }]}>
       <TouchableOpacity 
         style={styles.leftSection}
         onPress={onLocationPress}
       >
-        <Text style={[styles.deliveryTitle, { color: theme.colors.textSecondary }]}>Delivery in 10 mins</Text>
-        <View style={styles.locationContainer}>
-          <Text style={[styles.locationText, { color: theme.colors.text }]} numberOfLines={1}>
-            {selectedAddress ? `${selectedAddress.title || selectedAddress.name} - ${selectedAddress.city}` : 'Select Location'}
+        <View style={styles.deliveryRow}>
+          <MIcon name="lightning-bolt" size={24} color="#000" />
+          <Text style={styles.deliveryTimeText}>5 minutes</Text>
+        </View>
+        <View style={styles.locationRow}>
+          <Text style={[styles.locationText, { color: '#555' }]} numberOfLines={1}>
+            {selectedAddress ? `${selectedAddress.name || 'Home'} - ${selectedAddress.fullAddress || ''}` : 'Select Location'}
           </Text>
-          <Icon name="chevron-down" size={20} color={theme.colors.text} />
+          <MIcon name="chevron-down" size={18} color="#555" />
         </View>
       </TouchableOpacity>
 
       <View style={styles.rightSection}>
         <TouchableOpacity 
-          style={styles.iconOnlyButton}
-          onPress={() => navigation.navigate('FavoritesScreen')}
-        >
-          <Icon name="heart-outline" size={26} color={theme.colors.text} />
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.iconButton, { backgroundColor: theme.colors.surface }]}
+          style={[styles.walletButton, { backgroundColor: '#fff' }]}
           onPress={() => navigation.navigate('WalletScreen')}
         >
-          <Icon name="wallet-outline" size={22} color={theme.colors.text} />
-          <Text style={[styles.walletAmount, { color: theme.colors.text }]}>₹{wallet.balance.toFixed(0)}</Text>
+          <View style={styles.walletIconContainer}>
+            <MIcon name="wallet" size={18} color="#fff" />
+          </View>
+          <Text style={styles.walletAmount}>₹{wallet.balance.toFixed(0)}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile')}
         >
-          <Icon name="account-circle-outline" size={32} color={theme.colors.text} />
+          <MIcon name="account-circle" size={32} color="#000" />
         </TouchableOpacity>
       </View>
     </View>
@@ -62,50 +56,62 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 10,
+    backgroundColor: '#fef3e3',
   },
   leftSection: {
     flex: 1,
     marginRight: 10,
   },
-  deliveryTitle: {
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  locationContainer: {
+  deliveryRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 4,
+  },
+  deliveryTimeText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#000',
+    letterSpacing: -0.5,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    marginTop: -2,
   },
   locationText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginRight: 2,
+    fontSize: 12,
+    fontWeight: '600',
     maxWidth: '85%',
   },
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  iconOnlyButton: {
-    padding: 8,
-    marginRight: 4,
-  },
-  iconButton: {
+  walletButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    marginRight: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  walletIconContainer: {
+    backgroundColor: '#6c5ce7',
+    padding: 4,
+    borderRadius: 6,
+    marginRight: 6,
   },
   walletAmount: {
-    marginLeft: 4,
-    fontWeight: 'bold',
-    fontSize: 13,
+    fontWeight: '900',
+    fontSize: 15,
+    color: '#000',
   },
   profileButton: {
     padding: 2,

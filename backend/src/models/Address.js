@@ -32,7 +32,7 @@ const Address = sequelize.define('Address', {
     allowNull: true,
   },
   type: {
-    type: DataTypes.ENUM('Home', 'Work', 'Other'),
+    type: DataTypes.ENUM('Home', 'Office', 'Work', 'Other'),
     defaultValue: 'Home',
   },
   isDefault: {

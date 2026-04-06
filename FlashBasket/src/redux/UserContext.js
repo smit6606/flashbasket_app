@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import userService from '../services/userService';
 import { useAuth } from './AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserContext = createContext();
 
@@ -14,14 +15,33 @@ export const UserProvider = ({ children }) => {
   const [addressLoading, setAddressLoading] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
   const [error, setError] = useState(null);
+  const PERSIST_KEY = 'selected_address_id';
 
   const loadAddresses = React.useCallback(async () => {
     setAddressLoading(true);
     try {
-      const data = await userService.getAddresses();
-      setAddresses(data.addresses || []);
-      if (data.addresses && data.addresses.length > 0 && !selectedAddress) {
-        setSelectedAddress(data.addresses[0]);
+      const res = await userService.getAddresses();
+      const addressesList = res.data || [];
+      setAddresses(addressesList);
+      
+      if (addressesList.length > 0) {
+        // Priority 1: Backend default address (last set by user)
+        const backendDefault = addressesList.find(a => !!a.isDefault);
+        
+        // Priority 2: Local storage (fallback for currently active device session)
+        const savedId = await AsyncStorage.getItem(PERSIST_KEY);
+        const persisted = savedId ? addressesList.find(a => String(a.id) === savedId) : null;
+
+        if (backendDefault) {
+          setSelectedAddress(backendDefault);
+          await AsyncStorage.setItem(PERSIST_KEY, String(backendDefault.id));
+        } else if (persisted) {
+          setSelectedAddress(persisted);
+        } else {
+          // Default to the most recent address if no explicit default is found
+          const sorted = [...addressesList].sort((a, b) => b.id - a.id);
+          setSelectedAddress(sorted[0]);
+        }
       }
       setError(null);
     } catch (err) {
@@ -30,13 +50,21 @@ export const UserProvider = ({ children }) => {
     } finally {
       setAddressLoading(false);
     }
-  }, [selectedAddress]);
+  }, []);
 
   const loadWalletBalance = React.useCallback(async () => {
     setWalletLoading(true);
     try {
-      const data = await userService.getWalletInfo();
-      setWallet(data.wallet || { balance: 0 });
+      const balanceRes = await userService.getWalletInfo();
+      const historyRes = await userService.getWalletTransactions();
+      
+      const balanceData = balanceRes.data?.data || {};
+      const historyData = historyRes.data?.data || [];
+
+      setWallet({ 
+        balance: balanceData.balance || 0,
+        transactions: historyData
+      });
       setError(null);
     } catch (err) {
       console.error('Error loading wallet info:', err);
@@ -54,17 +82,34 @@ export const UserProvider = ({ children }) => {
       setAddresses([]);
       setSelectedAddress(null);
       setWallet({ balance: 0 });
+      AsyncStorage.removeItem(PERSIST_KEY).catch(() => {});
     }
   }, [isAuthenticated, loadAddresses, loadWalletBalance]);
 
+  const handleSetSelectedAddress = async (addr) => {
+    if (!addr) return;
+    setSelectedAddress(addr);
+    try {
+      if (addr.id) {
+        await AsyncStorage.setItem(PERSIST_KEY, String(addr.id));
+        // Sync with backend to remember for next login
+        await userService.setDefaultAddress(addr.id);
+      }
+    } catch (err) {
+      console.warn('Failed to sync default address to backend:', err);
+    }
+  };
+
   const addAddress = async (addressData) => {
     try {
-      const data = await userService.addAddress(addressData);
-      setAddresses([...addresses, data.address]);
-      if (!selectedAddress) {
-        setSelectedAddress(data.address);
+      const res = await userService.addAddress(addressData);
+      const newAddress = res.data;
+      if (newAddress) {
+        setAddresses([...addresses, newAddress]);
+        // Use the handler to sync with backend as default
+        handleSetSelectedAddress(newAddress);
       }
-      return data.address;
+      return newAddress;
     } catch (err) {
       console.error('Error adding address:', err);
       throw err;
@@ -73,11 +118,13 @@ export const UserProvider = ({ children }) => {
 
   const updateAddress = async (id, addressData) => {
     try {
-      const data = await userService.updateAddress(id, addressData);
-      const updated = data.address;
-      setAddresses(addresses.map((addr) => (addr.id === id ? updated : addr)));
-      if (selectedAddress?.id === id) {
-        setSelectedAddress(updated);
+      const res = await userService.updateAddress(id, addressData);
+      const updated = res.data;
+      if (updated) {
+        setAddresses(addresses.map((addr) => (addr.id === id ? updated : addr)));
+        if (selectedAddress?.id === id) {
+          handleSetSelectedAddress(updated);
+        }
       }
       return updated;
     } catch (err) {
@@ -91,7 +138,12 @@ export const UserProvider = ({ children }) => {
       await userService.deleteAddress(id);
       setAddresses(addresses.filter((addr) => addr.id !== id));
       if (selectedAddress?.id === id) {
-        setSelectedAddress(addresses.find((addr) => addr.id !== id) || null);
+        const next = addresses.find((addr) => addr.id !== id);
+        if (next) {
+          handleSetSelectedAddress(next);
+        } else {
+          setSelectedAddress(null);
+        }
       }
     } catch (err) {
       console.error('Error deleting address:', err);
@@ -101,9 +153,9 @@ export const UserProvider = ({ children }) => {
 
   const addMoneyToWallet = async (amount) => {
     try {
-      const data = await userService.addMoneyToWallet(amount);
-      setWallet(data.wallet);
-      return data;
+      const res = await userService.addMoneyToWallet(amount);
+      await loadWalletBalance();
+      return res.data;
     } catch (err) {
       console.error('Error adding money to wallet:', err);
       throw err;
@@ -126,7 +178,7 @@ export const UserProvider = ({ children }) => {
       value={{
         addresses,
         selectedAddress,
-        setSelectedAddress,
+        setSelectedAddress: handleSetSelectedAddress,
         wallet,
         addressLoading,
         walletLoading,

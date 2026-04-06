@@ -8,5 +8,6 @@ router.use(authMiddleware);
 
 router.get('/', walletController.getWallet);
 router.post('/add', walletController.addMoney);
+router.get('/history', walletController.getHistory);
 
 module.exports = router;

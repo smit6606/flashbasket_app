@@ -10,6 +10,22 @@ const Order = sequelize.define('Order', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  userName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  userPhone: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  userEmail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  fullAddress: {
+    type: DataTypes.TEXT,
+    allowNull: false,
+  },
   totalAmount: {
     type: DataTypes.FLOAT,
     allowNull: false,
@@ -27,7 +43,7 @@ const Order = sequelize.define('Order', {
     defaultValue: 0,
   },
   status: {
-    type: DataTypes.ENUM('Pending', 'Placed', 'Packed', 'Out for Delivery', 'Delivered', 'Cancelled'),
+    type: DataTypes.ENUM('Pending', 'Placed', 'Packed', 'Out for Delivery', 'Delivered'),
     defaultValue: 'Pending',
   },
   paymentMethod: {
@@ -37,6 +53,38 @@ const Order = sequelize.define('Order', {
   addressId: {
     type: DataTypes.INTEGER,
     allowNull: false,
+  },
+  otp: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  otpExpiresAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  pendingAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  packedAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  outForDeliveryAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  deliveredAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  rewardGiven: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
+  walletUsed: {
+    type: DataTypes.FLOAT,
+    defaultValue: 0,
   }
 }, {
   timestamps: true,

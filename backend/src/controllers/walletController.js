@@ -21,6 +21,15 @@ class WalletController {
       return responseHandler.badRequest(res, error.message || messages.COMMON.BAD_REQUEST);
     }
   }
+
+  async getHistory(req, res) {
+    try {
+      const result = await walletService.getHistory(req.user.id);
+      return responseHandler.success(res, 'Wallet history fetched', result);
+    } catch (error) {
+      return responseHandler.error(res, error.message || messages.COMMON.SOMETHING_WENT_WRONG);
+    }
+  }
 }
 
 module.exports = new WalletController();

@@ -1,22 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TextInput, KeyboardAvoidingView, Platform, Alert, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
-import AuthHeader from '../components/AuthHeader';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ButtonPrimary from '../components/ButtonPrimary';
 import { useUser } from '../redux/UserContext';
+import { useAuth } from '../redux/AuthContext';
 
-const CreateProfileScreen = ({ route, navigation }) => {
-  const { phone } = route.params;
+const EditProfileScreen = ({ navigation }) => {
   const { theme } = useTheme();
   const { updateProfile } = useUser();
+  const { user } = useAuth();
   
-  const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
-  const [referredBy, setReferredBy] = useState('');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [loading, setLoading] = useState(false);
 
-  const handleCreateProfile = async () => {
+  const handleUpdateProfile = async () => {
     if (!name.trim()) {
       Alert.alert('Error', 'Please enter your name');
       return;
@@ -24,16 +24,13 @@ const CreateProfileScreen = ({ route, navigation }) => {
 
     setLoading(true);
     try {
-      const payload = { phone, name, password };
-      if (referredBy.trim()) {
-        payload.referredBy = referredBy.trim().toUpperCase();
-      }
-      const response = await updateProfile(payload);
-      if (response) { // updateProfile returns the created user object if successful
-        navigation.replace('Main');
+      const response = await updateProfile({ name, email });
+      if (response) {
+        Alert.alert('Success', 'Profile updated successfully!');
+        navigation.goBack();
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to create profile. Please try again.');
+      Alert.alert('Error', 'Failed to update profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -45,14 +42,14 @@ const CreateProfileScreen = ({ route, navigation }) => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
       >
-      <AuthHeader onBack={() => navigation.goBack()} />
+      <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-left" size={24} color={theme.colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Edit Profile</Text>
+      </View>
       
       <View style={styles.content}>
-        <Text style={[styles.title, { color: theme.colors.text }]}>Complete Profile</Text>
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
-          Just a few more details to get you started
-        </Text>
-
         <View style={styles.inputSection}>
           <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>FULL NAME</Text>
           <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
@@ -67,36 +64,34 @@ const CreateProfileScreen = ({ route, navigation }) => {
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>PASSWORD (OPTIONAL)</Text>
+          <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>EMAIL</Text>
           <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
             <TextInput 
-              placeholder="Set a password" 
+              placeholder="Enter your email" 
               placeholderTextColor={theme.colors.textSecondary}
               style={[styles.input, { color: theme.colors.text }]}
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
+              value={email}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              onChangeText={setEmail}
             />
           </View>
         </View>
-
+        
         <View style={styles.inputSection}>
-          <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>REFERRAL CODE (OPTIONAL)</Text>
-          <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
+          <Text style={[styles.inputLabel, { color: theme.colors.textSecondary }]}>PHONE NUMBER (READ ONLY)</Text>
+          <View style={[styles.inputContainer, { borderColor: theme.colors.border, backgroundColor: theme.colors.background }]}>
             <TextInput 
-              placeholder="Have a referral code?" 
-              placeholderTextColor={theme.colors.textSecondary}
-              style={[styles.input, { color: theme.colors.text }]}
-              autoCapitalize="characters"
-              value={referredBy}
-              onChangeText={setReferredBy}
+              style={[styles.input, { color: theme.colors.textSecondary }]}
+              value={"+91 " + (user?.phone || '')}
+              editable={false}
             />
           </View>
         </View>
 
         <ButtonPrimary 
-          title="Create Profile" 
-          onPress={handleCreateProfile}
+          title="Save Changes" 
+          onPress={handleUpdateProfile}
           loading={loading}
           disabled={!name.trim()}
           style={styles.button}
@@ -108,24 +103,25 @@ const CreateProfileScreen = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  container: { flex: 1 },
+  keyboardContainer: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
   },
-  keyboardContainer: {
-    flex: 1,
+  backButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   content: {
     padding: 24,
     flex: 1,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 32,
   },
   inputSection: {
     marginBottom: 24,
@@ -143,8 +139,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   input: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
+    fontWeight: '600',
   },
   button: {
     marginTop: 'auto',
@@ -152,4 +148,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CreateProfileScreen;
+export default EditProfileScreen;

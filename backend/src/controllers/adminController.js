@@ -38,7 +38,7 @@ class AdminController {
   // Consolidated Product Management
   async getAllProducts(req, res) {
     try {
-      const products = await productService.getProducts();
+      const products = await productService.getProducts(req.query || {});
       return responseHandler.success(res, messages.PRODUCT.FETCH_SUCCESS, products);
     } catch (error) {
       return responseHandler.error(res, error.message || messages.PRODUCT.FETCH_FAILED);
@@ -140,13 +140,24 @@ class AdminController {
 
   async getOrderById(req, res) {
     try {
-      const result = await orderService.getOrderById(null, req.params.id, true); // true for admin mode
+      const result = await orderService.getOrderById(req.params.id, null); // Passing null for userId to bypass ownership check
       if (!result) {
         return responseHandler.notFound(res, messages.ORDER.NOT_FOUND);
       }
       return responseHandler.success(res, messages.ORDER.FETCH_SUCCESS, result);
     } catch (error) {
       return responseHandler.error(res, error.message || messages.COMMON.SOMETHING_WENT_WRONG);
+    }
+  }
+
+  async verifyOTP(req, res) {
+    try {
+      const { id } = req.params;
+      const { otp } = req.body;
+      const result = await orderService.verifyOrderOTP(id, otp);
+      return responseHandler.success(res, 'OTP Verified Successfully', result);
+    } catch (error) {
+      return responseHandler.badRequest(res, error.message || messages.COMMON.BAD_REQUEST);
     }
   }
 

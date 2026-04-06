@@ -13,7 +13,10 @@ import PaymentScreen from '../screens/PaymentScreen';
 import OrderSuccessScreen from '../screens/OrderSuccessScreen';
 import OrderHistoryScreen from '../screens/OrderHistoryScreen';
 import OrderDetailsScreen from '../screens/OrderDetailsScreen';
+import OrderTrackingScreen from '../screens/OrderTrackingScreen';
 import MapScreen from '../screens/MapScreen';
+import OfferScreen from '../screens/OfferScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,13 +29,16 @@ const MainAppNavigator = () => {
       <Stack.Screen name="AddressScreen" component={AddressScreen} />
       <Stack.Screen name="AddAddressScreen" component={AddAddressScreen} />
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="EditProfileScreen" component={EditProfileScreen} />
       <Stack.Screen name="WalletScreen" component={WalletScreen} />
       <Stack.Screen name="FavoritesScreen" component={FavoritesScreen} />
       <Stack.Screen name="PaymentScreen" component={PaymentScreen} />
       <Stack.Screen name="OrderSuccessScreen" component={OrderSuccessScreen} />
       <Stack.Screen name="OrderHistoryScreen" component={OrderHistoryScreen} />
       <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} />
+      <Stack.Screen name="OrderTrackingScreen" component={OrderTrackingScreen} />
       <Stack.Screen name="MapScreen" component={MapScreen} />
+      <Stack.Screen name="OfferScreen" component={OfferScreen} />
     </Stack.Navigator>
   );
 };

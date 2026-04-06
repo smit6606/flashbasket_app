@@ -1,4 +1,4 @@
-const { Wallet } = require('../models');
+const { Wallet, WalletTransaction, sequelize } = require('../models');
 
 class WalletService {
   async getWallet(userId) {
@@ -8,11 +8,37 @@ class WalletService {
   }
 
   async addMoney(userId, amount) {
-    let wallet = await Wallet.findOne({ where: { userId } });
-    if (!wallet) wallet = await Wallet.create({ userId });
-    wallet.balance += parseFloat(amount);
-    await wallet.save();
-    return { success: true, data: wallet };
+    const t = await sequelize.transaction();
+    try {
+      let wallet = await Wallet.findOne({ where: { userId }, transaction: t });
+      if (!wallet) wallet = await Wallet.create({ userId }, { transaction: t });
+      
+      const val = parseFloat(amount);
+      wallet.balance += val;
+      await wallet.save({ transaction: t });
+
+      await WalletTransaction.create({
+        userId,
+        type: 'credit',
+        amount: val,
+        source: 'add_money',
+        description: 'Money added to wallet'
+      }, { transaction: t });
+
+      await t.commit();
+      return { success: true, data: wallet };
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
+
+  async getHistory(userId) {
+    const history = await WalletTransaction.findAll({
+      where: { userId },
+      order: [['createdAt', 'DESC']]
+    });
+    return { success: true, data: history };
   }
 }
 

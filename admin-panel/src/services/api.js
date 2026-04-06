@@ -2,12 +2,13 @@ import axios from 'axios';
 
 // Get base URL for backend (assuming backend is running on 5000)
 // You might need to change this port if your backend runs on a different one
-const baseURL = import.meta.env.VITE_API_URL || 'https://rsd58pbr-5000.inc1.devtunnels.ms/api/admin';
+const baseURL = import.meta.env.VITE_API_URL || 'https://rsd58pbr-5000.inc1.devtunnels.ms/api/admin/';
 
 const api = axios.create({
   baseURL,
   headers: {
     'Content-Type': 'application/json',
+    'X-Tunnel-Skip-Anti-Phishing-Page': 'true', // Required to bypass Dev Tunnel splash page for API calls
   },
 });
 

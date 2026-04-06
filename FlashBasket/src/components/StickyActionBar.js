@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const StickyActionBar = ({ onGoToCart, onAddToCart }) => {
+const StickyActionBar = ({ onGoToCart, onAddToCart, onIncrease, onDecrease, cartCount = 0, quantity = 0 }) => {
   const { theme } = useTheme();
 
   return (
@@ -14,20 +14,34 @@ const StickyActionBar = ({ onGoToCart, onAddToCart }) => {
       >
         <View style={styles.cartIconWrapper}>
             <Icon name="cart-outline" size={20} color={theme.colors.text} />
-            <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
-                <Text style={styles.badgeText}>3</Text>
-            </View>
+            {cartCount > 0 && (
+                <View style={[styles.badge, { backgroundColor: theme.colors.primary }]}>
+                    <Text style={styles.badgeText}>{cartCount}</Text>
+                </View>
+            )}
         </View>
         <Text style={[styles.cartButtonText, { color: theme.colors.text }]}>Go to Cart</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        style={[styles.addButton, { backgroundColor: theme.colors.primary }]} 
-        onPress={onAddToCart}
-      >
-        <Text style={styles.addButtonText}>Add to Cart</Text>
-        <Icon name="add" size={24} color="#fff" />
-      </TouchableOpacity>
+      {quantity === 0 ? (
+        <TouchableOpacity 
+          style={[styles.addButton, { backgroundColor: theme.colors.primary }]} 
+          onPress={onAddToCart}
+        >
+          <Text style={styles.addButtonText}>Add to Cart</Text>
+          <Icon name="add" size={24} color="#fff" />
+        </TouchableOpacity>
+      ) : (
+        <View style={[styles.quantityContainer, { backgroundColor: theme.colors.primary }]}>
+          <TouchableOpacity onPress={onDecrease} style={styles.qtyAction}>
+            <Icon name="remove" size={20} color="#FFF" />
+          </TouchableOpacity>
+          <Text style={styles.qtyNum}>{quantity}</Text>
+          <TouchableOpacity onPress={onIncrease} style={styles.qtyAction}>
+            <Icon name="add" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -40,6 +54,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     gap: 12,
     alignItems: 'center',
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16, // Extra padding for iOS bottom handle if not using SafeArea properly
   },
   cartButton: {
     flex: 1,
@@ -67,6 +82,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '800',
+  },
+  quantityContainer: {
+    flex: 1.5,
+    height: 54,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 4,
+  },
+  qtyAction: {
+    width: 48,
+    height: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyNum: {
+    color: '#fff',
+    fontWeight: '900',
+    fontSize: 18,
   },
   cartIconWrapper: {
     position: 'relative',

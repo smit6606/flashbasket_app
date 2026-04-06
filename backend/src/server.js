@@ -10,9 +10,8 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
-    // Sync models - in production use migrations
-    // { force: false } will not drop existing tables
-    await sequelize.sync({ force: false });
+    // Sync models
+    await sequelize.sync();
     console.log('Models synced successfully.');
 
     const server = app.listen(PORT, '0.0.0.0', () => {

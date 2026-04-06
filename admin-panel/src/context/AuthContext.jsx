@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           // Attempt to fetch something protected to verify token
-          await api.get('/stats');
+          await api.get('stats');
           setToken(storedToken);
         } catch (error) {
           if (error.response?.status === 401 || error.response?.status === 403) {
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/login', { email, password });
+      const response = await api.post('login', { email, password });
       const { token, user } = response.data.data;
       if (token && user.role === 'admin') {
         localStorage.setItem('adminToken', token);
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const sendOtp = async (phone) => {
     try {
-      const response = await api.post('/auth/send-otp', { phone });
+      const response = await api.post('auth/send-otp', { phone });
       return { success: true, message: response.data.message };
     } catch (error) {
       return { success: false, message: error.response?.data?.message || 'Failed to send OTP' };
@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const verifyOtp = async (phone, otp) => {
     try {
-      const response = await api.post('/auth/verify-otp', { phone, otp });
+      const response = await api.post('auth/verify-otp', { phone, otp });
       const { token, user } = response.data.data;
       if (token && user.role === 'admin') {
         localStorage.setItem('adminToken', token);

@@ -39,6 +39,7 @@ router.delete('/subcategory/:id', adminController.deleteSubcategory);
 router.get('/orders', adminController.getAllOrders);
 router.get('/order/:id', adminController.getOrderById);
 router.put('/order/status/:id', adminController.updateOrderStatus);
+router.post('/order/verify-otp/:id', adminController.verifyOTP);
 
 // User Management
 router.get('/users', adminController.getAllUsers);

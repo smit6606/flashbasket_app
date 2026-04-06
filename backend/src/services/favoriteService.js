@@ -6,7 +6,7 @@ class FavoriteService {
       where: { userId },
       include: [{ model: Product, as: 'product' }]
     });
-    return { success: true, data: favorites };
+    return favorites;
   }
 
   async addToFavorites(userId, productId) {
@@ -14,14 +14,14 @@ class FavoriteService {
     if (!favorite) {
       favorite = await Favorite.create({ userId, productId });
     }
-    return { success: true, message: 'Added to favorites' };
+    return true;
   }
 
   async removeFromFavorites(userId, id) {
     const favorite = await Favorite.findOne({ where: { id, userId } });
     if (!favorite) throw new Error('Favorite not found');
     await favorite.destroy();
-    return { success: true, message: 'Removed from favorites' };
+    return true;
   }
 }
 

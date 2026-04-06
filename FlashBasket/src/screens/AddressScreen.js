@@ -51,7 +51,7 @@ const AddressScreen = ({ navigation }) => {
                 </View>
             ) : (
                 <FlatList
-                    data={addresses}
+                    data={addresses?.filter(addr => !!addr) || []}
                     keyExtractor={(item) => item.id.toString()}
                     contentContainerStyle={styles.listContent}
                     renderItem={({ item }) => (

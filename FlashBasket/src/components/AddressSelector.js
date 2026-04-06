@@ -1,154 +1,86 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const AddressSelector = ({ isAddressSelected, address, amount, onPress, onInstantOrder }) => {
-  const { theme } = useTheme();
+const AddressSelector = ({ isAddressSelected, address, amount, onPress }) => {
+  const { theme, isDarkMode } = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background, borderTopColor: theme.colors.border }]}>
-      <View style={styles.topRow}>
-        <View style={styles.addressInfo}>
-          <Icon name="location" size={20} color={theme.colors.primary} />
-          <View style={styles.textContainer}>
-            <Text style={[styles.deliverTo, { color: theme.colors.textSecondary }]}>
-              Deliver to {isAddressSelected ? 'Home' : 'Select Address'}
-            </Text>
-            {isAddressSelected && address && (
-              <Text style={[styles.address, { color: theme.colors.text }]} numberOfLines={1}>
-                {address}
-              </Text>
-            )}
-          </View>
-        </View>
-        
-        {!isAddressSelected && (
-          <TouchableOpacity onPress={onPress}>
-            <Text style={[styles.changeBtn, { color: theme.colors.primary }]}>Select Address</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
-      <View style={styles.buttonRow}>
-        <TouchableOpacity 
-          style={[styles.instantBtn, { borderColor: theme.colors.primary }]}
-          onPress={onInstantOrder}
-        >
-          <Text style={[styles.instantText, { color: theme.colors.primary }]}>Instant Order</Text>
-          <Text style={styles.codText}>(COD)</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.payBtn, { backgroundColor: theme.colors.primary }]}
-          onPress={onPress}
-        >
+    <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
+      <TouchableOpacity 
+        style={[styles.mainBtn, { backgroundColor: theme.colors.primary }]}
+        onPress={onPress}
+        activeOpacity={0.8}
+      >
+        <View style={styles.btnContent}>
           <View style={styles.amountContainer}>
             <Text style={styles.amount}>₹{amount}</Text>
             <Text style={styles.totalLabel}>TOTAL</Text>
           </View>
-          <View style={styles.payContainer}>
-            <Text style={styles.payText}>{isAddressSelected ? 'PAY NOW' : 'SELECT ADDRESS'}</Text>
+          
+          <View style={styles.actionContainer}>
+            <Text style={styles.actionText}>
+              {isAddressSelected ? 'PROCEED TO PAYMENT' : 'SELECT ADDRESS'}
+            </Text>
             <Icon name="chevron-forward" size={20} color="#FFF" />
           </View>
-        </TouchableOpacity>
-      </View>
+        </View>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 12,
     paddingBottom: 24,
-    borderTopWidth: 1,
+    borderTopWidth: 0.5,
+    borderTopColor: '#eee',
     elevation: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
   },
-  topRow: {
+  mainBtn: {
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    height: 60,
+    justifyContent: 'center',
+  },
+  btnContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  addressInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  textContainer: {
-    marginLeft: 8,
-    flex: 1,
-  },
-  deliverTo: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
-  },
-  address: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  changeBtn: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  instantBtn: {
-    flex: 0.4,
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  instantText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  codText: {
-    fontSize: 8,
-    color: '#666',
-  },
-  payBtn: {
-    flex: 1,
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    justifyContent: 'space-between',
   },
   amountContainer: {
     alignItems: 'flex-start',
   },
   amount: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '800',
   },
   totalLabel: {
     color: 'rgba(255,255,255,0.7)',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  payContainer: {
+  actionContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  payText: {
+  actionText: {
     color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '800',
     marginRight: 4,
   },
 });
 
 export default AddressSelector;
+

@@ -19,9 +19,12 @@ const Skeleton = ({ width, height, borderRadius = 8, style }) => {
     return () => animation.stop();
   }, [animatedValue]);
 
+  // Ensure width is a number for interpolation if possible, otherwise use a safe large number
+  const numericWidth = typeof width === 'number' ? width : 400;
+  
   const translateX = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [-width, width],
+    outputRange: [-numericWidth, numericWidth],
   });
 
   return (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, Image, Alert, ActivityIndicator, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Image, Alert, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import AppHeader from '../components/AppHeader';
@@ -7,7 +7,7 @@ import SearchBar from '../components/SearchBar';
 import CategoryFilterRow from '../components/CategoryFilterRow';
 import BannerCarousel from '../components/BannerCarousel';
 import ProductSection from '../components/ProductSection';
-import BottomCartBar from '../components/BottomCartBar';
+import DynamicCartBar from '../components/DynamicCartBar';
 import Footer from '../components/Footer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -16,22 +16,23 @@ import { useCart } from '../redux/CartContext';
 import { useAuth } from '../redux/AuthContext';
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
+import AddressModal from '../components/AddressModal';
 
 const { width } = Dimensions.get('window');
 
 const HomeScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
   const { user } = useAuth();
-  const { selectedAddress } = useUser();
   const { getCartCount, getCartTotal } = useCart();
   
+  const { addresses, selectedAddress, setSelectedAddress, deleteAddress } = useUser();
   const [categories, setCategories] = useState([]);
   const [sections, setSections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
   const scrollY = useRef(new Animated.Value(0)).current;
-  const bottomBarTranslateY = useRef(new Animated.Value(0)).current;
 
   const fetchHomeData = useCallback(async () => {
     try {
@@ -75,10 +76,18 @@ const HomeScreen = ({ navigation }) => {
   };
 
   const cartCount = getCartCount();
+  const cartTotal = getCartTotal();
+
+  // Animation for the header background
+  const headerOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <AppHeader onLocationPress={() => navigation.navigate('MapScreen')} />
+      <AppHeader onLocationPress={() => setShowAddressModal(true)} />
       
       {loading && !refreshing ? (
         <View style={styles.centerContainer}>
@@ -86,74 +95,90 @@ const HomeScreen = ({ navigation }) => {
           <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Setting up your store...</Text>
         </View>
       ) : (
-        <Animated.ScrollView
-          showsVerticalScrollIndicator={false}
-          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
-          scrollEventThrottle={16}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
-          }
-        >
-          {/* Welcome Area */}
-          <View style={styles.welcomeContainer}>
-            <View>
-              <Text style={[styles.welcomeText, { color: theme.colors.textSecondary }]}>Good morning,</Text>
-              <Text style={[styles.userName, { color: theme.colors.text }]}>
-                {user?.name?.split(' ')[0] || 'Flash User'} 👋
-              </Text>
+        <View style={{ flex: 1 }}>
+          <Animated.ScrollView
+            showsVerticalScrollIndicator={false}
+            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
+            }
+          >
+            {/* Search Bar - Sticky logic can be added later but keeping it here for now */}
+            <View style={styles.searchContainer}>
+              <SearchBar />
             </View>
-            <TouchableOpacity style={[styles.couponBadge, { backgroundColor: theme.colors.primaryLight }]}>
-              <Icon name="ticket-percent" size={18} color={theme.colors.primary} />
-              <Text style={[styles.couponText, { color: theme.colors.primary }]}>3 OFFERS</Text>
-            </TouchableOpacity>
-          </View>
 
-          <SearchBar />
-          
-          <View style={styles.bannerContainer}>
+            {/* Quick Category Grid */}
+            <View style={styles.categoryHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Shop by Category</Text>
+            </View>
+            <CategoryFilterRow onCategorySelect={(catId) => {
+              if (catId) navigation.navigate('Categories', { categoryId: catId });
+            }} />
+
+            {/* Banners */}
             <BannerCarousel />
-          </View>
 
-          {/* Quick Category Row - Upgraded Circular Look */}
-          <CategoryFilterRow onCategorySelect={(catId) => {
-            if (catId) navigation.navigate('CategoryProducts', { categoryId: catId });
-          }} />
-          
-          <View style={styles.divider} />
+            {/* Dynamic Sections */}
+            {sections.length > 0 ? (
+              sections.map((section, index) => (
+                <ProductSection 
+                  key={section.id} 
+                  title={section.title} 
+                  data={section.data} 
+                  onViewAll={() => navigation.navigate('Categories', { categoryId: section.id, categoryName: section.title })} 
+                />
+              ))
+            ) : (
+              <View style={styles.noDataContainer}>
+                <Icon name="basket-off-outline" size={80} color={theme.colors.textTertiary} />
+                <Text style={[styles.noDataTitle, { color: theme.colors.text }]}>No Products Stocked</Text>
+              </View>
+            )}
 
-          {/* Dynamic Sections */}
-          {sections.length > 0 ? (
-            sections.map((section, index) => (
-              <ProductSection 
-                key={section.id} 
-                title={section.title} 
-                data={section.data} 
-                onViewAll={() => navigation.navigate('CategoryProducts', { categoryId: section.id, categoryName: section.title })} 
-              />
-            ))
-          ) : (
-            <View style={styles.noDataContainer}>
-              <Icon name="basket-off-outline" size={80} color={theme.colors.textTertiary} />
-              <Text style={[styles.noDataTitle, { color: theme.colors.text }]}>No Products Stocked</Text>
-              <Text style={[styles.noDataSubtitle, { color: theme.colors.textSecondary }]}>
-                Wait for the admin to add fresh stock.
-              </Text>
-            </View>
-          )}
+            <Footer theme={theme} />
+            <View style={{ height: 160 }} />
+          </Animated.ScrollView>
 
-          <Footer theme={theme} />
-          <View style={{ height: 140 }} />
-        </Animated.ScrollView>
+          {/* Sticky Offer Bar and Cart Bar */}
+          <DynamicCartBar 
+            visible={cartCount > 0} 
+            cartCount={cartCount} 
+            cartTotal={cartTotal} 
+            onCartPress={() => navigation.navigate('CartScreen')} 
+            onOfferPress={() => navigation.navigate('OfferScreen')}
+          />
+        </View>
       )}
-      
-      <Animated.View style={[styles.bottomBar, { transform: [{ translateY: bottomBarTranslateY }] }]}>
-        <BottomCartBar 
-          visible={cartCount > 0} 
-          count={cartCount} 
-          amount={getCartTotal()} 
-          onPress={() => navigation.navigate('CartScreen')} 
-        />
-      </Animated.View>
+
+      <AddressModal 
+        visible={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        addresses={addresses}
+        onSelect={(addr) => {
+          setSelectedAddress(addr);
+          setShowAddressModal(false);
+        }}
+        onAdd={() => {
+          setShowAddressModal(false);
+          navigation.navigate('AddAddressScreen');
+        }}
+        onEdit={(addr) => {
+          setShowAddressModal(false);
+          navigation.navigate('AddAddressScreen', { address: addr, isEdit: true });
+        }}
+        onDelete={(id) => {
+          Alert.alert(
+            'Delete Address',
+            'Are you sure you want to delete this address?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Delete', style: 'destructive', onPress: () => deleteAddress(id) },
+            ]
+          );
+        }}
+      />
     </SafeAreaView>
   );
 };
@@ -162,31 +187,22 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   loadingText: { marginTop: 12, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
-  welcomeContainer: {
+  searchContainer: {
+    paddingTop: 8,
+    backgroundColor: '#fff', // Or theme based
+  },
+  categoryHeader: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 8,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
-  welcomeText: { fontSize: 13, fontWeight: '600' },
-  userName: { fontSize: 24, fontWeight: '900', letterSpacing: -0.5 },
-  couponBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    gap: 4,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
-  couponText: { fontSize: 11, fontWeight: '800' },
-  bannerContainer: { marginTop: 8 },
-  divider: { height: 8, backgroundColor: '#f5f6fa', marginVertical: 8 },
-  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0 },
+
   noDataContainer: { padding: 60, alignItems: 'center', justifyContent: 'center' },
   noDataTitle: { fontSize: 20, fontWeight: '900', marginTop: 16, marginBottom: 8 },
-  noDataSubtitle: { fontSize: 14, textAlign: 'center', maxWidth: '80%', lineHeight: 20 },
 });
 
 export default HomeScreen;

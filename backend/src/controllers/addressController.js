@@ -40,6 +40,16 @@ class AddressController {
       return responseHandler.notFound(res, error.message || messages.COMMON.NOT_FOUND);
     }
   }
+
+  async setDefaultAddress(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await addressService.setDefaultAddress(req.user.id, id);
+      return responseHandler.success(res, 'Default address updated', result);
+    } catch (error) {
+      return responseHandler.badRequest(res, error.message || messages.COMMON.BAD_REQUEST);
+    }
+  }
 }
 
 module.exports = new AddressController();

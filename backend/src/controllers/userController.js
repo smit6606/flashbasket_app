@@ -5,9 +5,20 @@ const messages = require('../utils/message');
 class UserController {
   async getProfile(req, res) {
     try {
-      const user = await User.findByPk(req.user.id, {
+      let user = await User.findByPk(req.user.id, {
         attributes: { exclude: ['otp', 'otpExpiry'] }
       });
+      if (user && !user.referralCode) {
+        let code = '';
+        let isUnique = false;
+        while (!isUnique) {
+          code = 'FLASH' + Math.floor(1000 + Math.random() * 9000);
+          const exists = await User.findOne({ where: { referralCode: code } });
+          if (!exists) isUnique = true;
+        }
+        user.referralCode = code;
+        await user.save();
+      }
       return responseHandler.success(res, 'Profile fetched', user);
     } catch (error) {
       return responseHandler.error(res, error.message || messages.COMMON.SOMETHING_WENT_WRONG);

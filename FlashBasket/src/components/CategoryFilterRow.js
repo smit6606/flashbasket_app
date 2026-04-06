@@ -50,17 +50,17 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
                 <View style={[
                   styles.circle, 
                   { 
-                    backgroundColor: isActive ? theme.colors.primaryLight : theme.colors.surface,
-                    borderColor: isActive ? theme.colors.primary : theme.colors.border,
+                    backgroundColor: isActive ? '#fef0e3' : '#fff',
+                    borderColor: isActive ? '#000' : '#f0f0f0',
                   }
                 ]}>
                   {category.image ? (
                     <Image 
                       source={{ uri: category.image }} 
-                      style={[styles.catImage, { opacity: isActive ? 1 : 0.8 }]} 
+                      style={[styles.catImage]} 
                     />
                   ) : (
-                    <Text style={[styles.initial, { color: isActive ? theme.colors.primary : theme.colors.textSecondary }]}>
+                    <Text style={[styles.initial, { color: isActive ? '#000' : '#999' }]}>
                       {category.name?.[0]?.toUpperCase()}
                     </Text>
                   )}
@@ -70,14 +70,13 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
                   style={[
                     styles.categoryText,
                     { 
-                      color: isActive ? theme.colors.primary : theme.colors.textSecondary,
-                      fontWeight: isActive ? '900' : '600',
+                      color: isActive ? '#000' : '#777',
+                      fontWeight: isActive ? '900' : '700',
                     },
                   ]}
                 >
                   {category.name}
                 </Text>
-                {isActive && <View style={[styles.activeDot, { backgroundColor: theme.colors.primary }]} />}
               </TouchableOpacity>
             );
           })
@@ -89,54 +88,44 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    paddingVertical: 12,
   },
   scrollContent: {
     paddingHorizontal: 16,
-    gap: 20,
+    gap: 16,
   },
   categoryItem: {
     alignItems: 'center',
-    width: 65,
+    width: 70,
   },
   circle: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 66,
+    height: 66,
+    borderRadius: 20, // More square-rounded like Zepto
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
     overflow: 'hidden',
-    elevation: 2,
+    elevation: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
   },
   catImage: {
-    width: '70%',
-    height: '70%',
+    width: '60%',
+    height: '60%',
     resizeMode: 'contain',
   },
   initial: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '900',
   },
   categoryText: {
-    fontSize: 10,
+    fontSize: 11,
     textAlign: 'center',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  activeDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  loader: {
-    marginHorizontal: 30,
+    letterSpacing: -0.2,
   },
 });
 

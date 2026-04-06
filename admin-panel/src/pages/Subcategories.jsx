@@ -28,7 +28,7 @@ export default function Subcategories() {
   const fetchSubcategories = async () => {
     try {
       setFetchLoading(true);
-      const res = await api.get('/subcategories');
+      const res = await api.get('subcategories');
       const data = responseHandler(res);
       setSubcategories(data.data || []);
     } catch (err) {
@@ -40,7 +40,7 @@ export default function Subcategories() {
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get('/categories');
+      const res = await api.get('categories');
       const data = responseHandler(res);
       setCategories(data.data || []);
     } catch (err) {
@@ -78,9 +78,9 @@ export default function Subcategories() {
       };
 
       if (editingId) {
-        await api.put(`/subcategory/${editingId}`, submitData);
+        await api.put(`subcategory/${editingId}`, submitData);
       } else {
-        await api.post('/subcategory', submitData);
+        await api.post('subcategory', submitData);
       }
       setIsModalOpen(false);
       fetchSubcategories();
@@ -94,7 +94,7 @@ export default function Subcategories() {
   const handleDelete = async (subcategory) => {
     if (window.confirm('Are you sure you want to delete this subcategory?')) {
       try {
-        await api.delete(`/subcategory/${subcategory.id}`);
+        await api.delete(`subcategory/${subcategory.id}`);
         fetchSubcategories();
       } catch (err) {
         alert(errorHandler(err));

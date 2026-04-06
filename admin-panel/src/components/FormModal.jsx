@@ -12,7 +12,7 @@ import {
 import { alpha } from '@mui/material/styles';
 import { Close as CloseIcon } from '@mui/icons-material';
 
-export default function FormModal({ isOpen, onClose, title, children, onSubmit, submitText = 'Execute Action', loading = false }) {
+export default function FormModal({ isOpen, onClose, title, children, onSubmit, submitText = 'Execute Action', loading = false, hideFooter = false }) {
   return (
     <Dialog 
       open={isOpen} 
@@ -55,29 +55,31 @@ export default function FormModal({ isOpen, onClose, title, children, onSubmit, 
           </Box>
         </DialogContent>
         
-        <DialogActions sx={{ p: 3, pt: 2, gap: 2 }}>
-          <Button 
-            onClick={onClose} 
-            variant="text" 
-            sx={{ px: 4, py: 1.5, fontWeight: 800, color: 'text.secondary' }}
-          >
-            Discard
-          </Button>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            disabled={loading}
-            sx={{ 
-              px: 5, 
-              py: 1.5, 
-              borderRadius: '16px',
-              fontWeight: 900,
-              boxShadow: (theme) => `0 10px 20px ${alpha(theme.palette.primary.main, 0.2)}`
-            }}
-          >
-            {loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : submitText}
-          </Button>
-        </DialogActions>
+        {!hideFooter && (
+          <DialogActions sx={{ p: 3, pt: 2, gap: 2 }}>
+            <Button 
+              onClick={onClose} 
+              variant="text" 
+              sx={{ px: 4, py: 1.5, fontWeight: 800, color: 'text.secondary' }}
+            >
+              Discard
+            </Button>
+            <Button 
+              type="submit" 
+              variant="contained" 
+              disabled={loading}
+              sx={{ 
+                px: 5, 
+                py: 1.5, 
+                borderRadius: '16px',
+                fontWeight: 900,
+                boxShadow: (theme) => `0 10px 20px ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            >
+              {loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : submitText}
+            </Button>
+          </DialogActions>
+        )}
       </form>
     </Dialog>
   );

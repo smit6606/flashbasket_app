@@ -7,15 +7,30 @@ class AuthService {
     const otp = '123456';
     const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
 
+    const generateReferralCode = async () => {
+      let code = '';
+      let isUnique = false;
+      while (!isUnique) {
+        code = 'FLASH' + Math.floor(1000 + Math.random() * 9000);
+        const exists = await User.findOne({ where: { referralCode: code } });
+        if (!exists) isUnique = true;
+      }
+      return code;
+    };
+
     let user = await User.findOne({ where: { phone } });
     if (!user) {
-      user = await User.create({ phone, otp, otpExpiry });
+      const refCode = await generateReferralCode();
+      user = await User.create({ phone, otp, otpExpiry, referralCode: refCode });
       // Create wallet and cart for new user
       await Wallet.create({ userId: user.id });
       await Cart.create({ userId: user.id });
     } else {
       user.otp = otp;
       user.otpExpiry = otpExpiry;
+      if (!user.referralCode) {
+        user.referralCode = await generateReferralCode();
+      }
       await user.save();
     }
 
@@ -41,7 +56,7 @@ class AuthService {
     user.otpExpiry = null;
     await user.save();
 
-    return { success: true, token, user: { id: user.id, phone: user.phone, name: user.name, role: user.role } };
+    return { success: true, token, user: { id: user.id, phone: user.phone, name: user.name, role: user.role, referralCode: user.referralCode } };
   }
 
   async adminLogin(email, password) {

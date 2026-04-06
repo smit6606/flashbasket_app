@@ -1,31 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
+import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProductCard from '../components/ProductCard';
 import orderService from '../services/orderService';
+import categoryService from '../services/categoryService';
+import Animated, { FadeInRight } from 'react-native-reanimated';
+import { useCart } from '../redux/CartContext';
+import DynamicCartBar from '../components/DynamicCartBar';
 
 const BuyAgainScreen = ({ navigation }) => {
   const { theme } = useTheme();
+  const { getCartCount, getCartTotal } = useCart();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([{ id: 'all', name: 'All Items', icon: 'heart' }]);
+  const [selectedTab, setSelectedTab] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetchFrequentItems();
+    fetchData();
   }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    await Promise.all([fetchCategories(), fetchFrequentItems()]);
+    setLoading(false);
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await categoryService.getAllCategories();
+      const cats = res.data || [];
+      setCategories([{ id: 'all', name: 'All Items', icon: 'heart' }, ...cats]);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+    }
+  };
 
   const fetchFrequentItems = async () => {
     try {
-      setLoading(true);
       setError(null);
       const data = await orderService.getOrderHistory();
       const orders = data.orders || [];      
       
-      // Calculate frequency of each product
       const productMap = {};
-      
       orders.forEach(order => {
         if (order.items) {
           order.items.forEach(item => {
@@ -41,25 +63,69 @@ const BuyAgainScreen = ({ navigation }) => {
         }
       });
       
-      // Sort by count descending
       const sortedProducts = Object.values(productMap).sort((a, b) => b.count - a.count);
       setProducts(sortedProducts);
     } catch (err) {
       console.error('Error fetching frequent items:', err);
       setError('Could not load frequent items.');
-    } finally {
-      setLoading(false);
     }
   };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
+  const filteredProducts = selectedTab === 'all' 
+    ? products 
+    : products.filter(p => p.categoryId === selectedTab);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
+          <Icon name="chevron-back" size={28} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={[styles.title, { color: theme.colors.text }]}>Buy Again</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 28 }} />
+      </View>
+
+      <View style={styles.tabContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.tabScroll}
+        >
+          {categories.map((cat) => {
+            const isActive = selectedTab === cat.id;
+            return (
+              <TouchableOpacity 
+                key={cat.id}
+                onPress={() => setSelectedTab(cat.id)}
+                style={[
+                  styles.tabItem, 
+                  { 
+                    backgroundColor: isActive ? theme.colors.secondary + '20' : theme.colors.surface,
+                    borderColor: isActive ? theme.colors.secondary : theme.colors.border
+                  }
+                ]}
+              >
+                {cat.id === 'all' ? (
+                  <Icon name="heart" size={16} color={isActive ? theme.colors.secondary : theme.colors.textSecondary} />
+                ) : (
+                  <MIcon name="shopping-outline" size={16} color={isActive ? theme.colors.secondary : theme.colors.textSecondary} />
+                )}
+                <Text style={[
+                  styles.tabText, 
+                  { color: isActive ? theme.colors.secondary : theme.colors.textSecondary }
+                ]}>
+                  {cat.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {loading ? (
@@ -72,34 +138,43 @@ const BuyAgainScreen = ({ navigation }) => {
           <Text style={[styles.errorText, { color: theme.colors.error }]}>{error}</Text>
           <TouchableOpacity 
             style={[styles.retryBtn, { backgroundColor: theme.colors.primary }]}
-            onPress={fetchFrequentItems}
+            onPress={fetchData}
           >
             <Text style={styles.retryText}>Retry</Text>
           </TouchableOpacity>
         </View>
       ) : (
         <FlatList
-          data={products}
+          data={filteredProducts}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchFrequentItems} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
           }
-          renderItem={({ item }) => (
-            <View style={styles.productWrapper}>
+          renderItem={({ item, index }) => (
+            <Animated.View 
+              entering={FadeInRight.delay(index * 50)}
+              style={styles.productWrapper}
+            >
               <ProductCard product={item} />
-            </View>
+            </Animated.View>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Icon name="basket-outline" size={60} color={theme.colors.textSecondary} />
-              <Text style={[styles.emptyText, { color: theme.colors.text }]}>No past orders found.</Text>
+              <Icon name="basket-outline" size={80} color={theme.colors.textTertiary} />
+              <Text style={[styles.emptyText, { color: theme.colors.text }]}>No items found in this category.</Text>
             </View>
           }
         />
       )}
+      <DynamicCartBar 
+        visible={getCartCount() > 0} 
+        cartCount={getCartCount()} 
+        cartTotal={getCartTotal()} 
+        onCartPress={() => navigation.navigate('CartScreen')} 
+      />
     </SafeAreaView>
   );
 };
@@ -117,11 +192,32 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   title: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 20,
+    fontWeight: '900',
   },
   backBtn: {
     padding: 4,
+  },
+  tabContainer: {
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+  },
+  tabScroll: {
+    paddingHorizontal: 16,
+    gap: 10,
+  },
+  tabItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   center: {
     flex: 1,
@@ -143,12 +239,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   listContent: {
-    padding: 10,
+    padding: 8,
     paddingBottom: 40,
   },
   productWrapper: {
-    flex: 1,
-    maxWidth: '50%',
+    flex: 0.5,
+    padding: 4,
   },
   emptyContainer: {
     flex: 1,
@@ -159,6 +255,9 @@ const styles = StyleSheet.create({
   emptyText: {
     marginTop: 16,
     fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    width: '80%',
   },
 });
 

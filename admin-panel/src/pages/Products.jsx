@@ -51,9 +51,12 @@ export default function Products() {
   const fetchProducts = async () => {
     try {
       setFetchLoading(true);
-      const res = await api.get('/products');
+      const res = await api.get('products');
       const data = responseHandler(res);
-      setProducts(data.data || []);
+      // Backend productService.getProducts returns { data: rows, total, ... }
+      // responseHandler(res) returns res.data
+      // So res.data.data is { data: rows, total, ... }
+      setProducts(data.data?.data || data.data || []);
     } catch (err) {
       console.error(errorHandler(err));
     } finally {
@@ -63,7 +66,7 @@ export default function Products() {
 
   const fetchCategories = async () => {
     try {
-      const res = await api.get('/categories');
+      const res = await api.get('categories');
       const data = responseHandler(res);
       setCategories(data.data || []);
     } catch (err) {
@@ -73,7 +76,7 @@ export default function Products() {
 
   const fetchSubcategories = async () => {
     try {
-      const res = await api.get('/subcategories');
+      const res = await api.get('subcategories');
       const data = responseHandler(res);
       setSubcategories(data.data || []);
     } catch (err) {
@@ -124,9 +127,9 @@ export default function Products() {
       };
 
       if (editingId) {
-        await api.put(`/product/${editingId}`, submitData);
+        await api.put(`product/${editingId}`, submitData);
       } else {
-        await api.post('/product', submitData);
+        await api.post('product', submitData);
       }
       setIsModalOpen(false);
       fetchProducts();
@@ -140,7 +143,7 @@ export default function Products() {
   const handleDelete = async (product) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await api.delete(`/product/${product.id}`);
+        await api.delete(`product/${product.id}`);
         fetchProducts();
       } catch (err) {
         alert(errorHandler(err));

@@ -20,6 +20,7 @@ import {
   CategoryRounded as CategoryIcon,
   SchemaRounded as SubcategoryIcon,
   LocalMallRounded as OrdersIcon,
+  HistoryRounded as PastOrdersIcon,
   GroupRounded as UsersIcon,
   LogoutRounded as LogoutIcon,
   ChevronLeftRounded as BackIcon
@@ -34,6 +35,7 @@ const navItems = [
   { group: 'Operational Analytics', items: [
     { name: 'Dashboard', path: '/', icon: <DashboardIcon /> },
     { name: 'Orders Hub', path: '/orders', icon: <OrdersIcon /> },
+    { name: 'Past Orders', path: '/past-orders', icon: <PastOrdersIcon /> },
     { name: 'User Registry', path: '/users', icon: <UsersIcon /> },
   ]},
   { group: 'Inventory Logistics', items: [
@@ -185,50 +187,35 @@ export default function Sidebar({ open, onClose, variant }) {
           ))}
         </List>
 
-        {/* User Session Interface */}
-        <Box sx={{ mt: 'auto', p: 1, mb: 3 }}>
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: '20px',
-              backgroundColor: isDark ? alpha(theme.palette.background.default, 0.4) : alpha(theme.palette.primary.main, 0.05),
-              border: `1px solid ${theme.palette.divider}`,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              transition: '0.3s ease-in-out',
-              '&:hover': { 
-                bgcolor: isDark ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.primary.main, 0.08),
-                borderColor: theme.palette.primary.main 
-              }
-            }}
-          >
-            <Avatar 
-              sx={{ 
-                width: 36, 
-                height: 36, 
-                bgcolor: 'secondary.main',
-                fontWeight: 800,
-                fontSize: '0.8rem',
-                boxShadow: `0 4px 10px ${alpha(theme.palette.secondary.main, 0.2)}`
+        {/* Logout Action */}
+        <Box sx={{ mt: 'auto', px: 2, mb: 4 }}>
+          <ListItem disablePadding>
+            <ListItemButton
+              onClick={handleLogout}
+              sx={{
+                borderRadius: '12px',
+                py: 1.25,
+                px: 2,
+                color: 'error.main',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.error.main, 0.08),
+                  '& .MuiListItemIcon-root': { color: 'error.main' }
+                },
               }}
             >
-              AD
-            </Avatar>
-            <Box sx={{ flex: 1, overflow: 'hidden' }}>
-              <Typography sx={{ color: 'text.primary', fontWeight: 800, fontSize: '0.8rem', lineHeight: 1.2 }}>
-                Admin Terminal
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, fontSize: '0.65rem' }}>
-                Stable Build 2.4
-              </Typography>
-            </Box>
-            <Tooltip title="Secure Exit">
-              <IconButton onClick={handleLogout} size="small" sx={{ color: 'text.disabled', '&:hover': { color: 'error.main' } }}>
-                <LogoutIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
+              <ListItemIcon sx={{ minWidth: 38, color: 'inherit' }}>
+                <LogoutIcon sx={{ fontSize: '1.3rem' }} />
+              </ListItemIcon>
+              <ListItemText
+                primary="Sign Out"
+                primaryTypographyProps={{
+                  fontSize: '0.875rem',
+                  fontWeight: 800,
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
         </Box>
       </Box>
     </Drawer>
