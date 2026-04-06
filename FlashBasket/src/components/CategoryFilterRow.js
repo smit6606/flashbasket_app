@@ -54,9 +54,9 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
                     borderColor: isActive ? '#000' : '#f0f0f0',
                   }
                 ]}>
-                  {category.image ? (
+                  {category.image && category.image.trim() !== '' ? (
                     <Image 
-                      source={{ uri: category.image }} 
+                      source={{ uri: category.image.trim() }} 
                       style={[styles.catImage]} 
                     />
                   ) : (
