@@ -104,9 +104,9 @@ const HomeScreen = ({ navigation }) => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
             }
           >
-            {/* Search Bar - Sticky logic can be added later but keeping it here for now */}
+            {/* Search Bar directs to Categories Search */}
             <View style={styles.searchContainer}>
-              <SearchBar />
+              <SearchBar onPress={() => navigation.navigate('Categories')} />
             </View>
 
             {/* Quick Category Grid */}

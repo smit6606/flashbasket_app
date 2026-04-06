@@ -253,35 +253,6 @@ class OrderService {
 
       user.firstOrderDelivered = true;
       await user.save({ transaction });
-
-      // 3. Referral Logic
-      if (user.referredBy) {
-        const referrer = await User.findOne({ where: { referralCode: user.referredBy }, transaction });
-        if (referrer) {
-          let referrerWallet = await Wallet.findOne({ where: { userId: referrer.id }, transaction });
-          if (!referrerWallet) {
-             referrerWallet = await Wallet.create({ userId: referrer.id, balance: 0 }, { transaction });
-          }
-          referrerWallet.balance += 50;
-          await referrerWallet.save({ transaction });
-          await WalletTransaction.create({
-            userId: referrer.id,
-            type: 'credit',
-            amount: 50,
-            source: 'referral',
-            description: `Referral bonus for inviting ${user.name}`
-          }, { transaction });
-
-          wallet.balance += 50;
-          await WalletTransaction.create({
-             userId: user.id,
-             type: 'credit',
-             amount: 50,
-             source: 'referral',
-             description: `Referred by ${referrer.name}`
-          }, { transaction });
-        }
-      }
     }
 
     await wallet.save({ transaction });

@@ -13,7 +13,7 @@ const placeholders = [
   'Wireless Earphones',
 ];
 
-const SearchBar = () => {
+const SearchBar = ({ onPress }) => {
   const { theme } = useTheme();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -57,7 +57,7 @@ const SearchBar = () => {
   }, [fadeAnim, slideAnim]);
 
   return (
-    <View style={styles.container}>
+    <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
       <View style={[styles.searchBox, { 
         backgroundColor: theme.colors.surface, 
         borderColor: theme.colors.border,
@@ -86,7 +86,7 @@ const SearchBar = () => {
         <View style={styles.divider} />
         <Icon name="mic-outline" size={20} color={theme.colors.primary} style={styles.micIcon} />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
