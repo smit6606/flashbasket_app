@@ -60,10 +60,10 @@ const DUMMY_PRODUCT = {
 };
 
 const ProductDetailsScreen = ({ navigation, route }) => {
-  const { theme } = useTheme();
+    const { theme } = useTheme();
   const { toggleFavorite, isFavorite } = useFavorites();
   const { addToRecentlyViewed } = useRecentlyViewed();
-  const { cart, addToCart, updateQuantity, getCartCount } = useCart();
+  const { addToCart, getCartCount } = useCart();
   const [isMoreInfoExpanded, setIsMoreInfoExpanded] = useState(false);
 
   const product = route.params?.product || DUMMY_PRODUCT;
@@ -75,24 +75,9 @@ const ProductDetailsScreen = ({ navigation, route }) => {
     }
   }, [product]);
 
-  const cartItem = cart?.items?.find(item => item.productId == product.id);
-  const quantity = cartItem ? cartItem.quantity : 0;
-
   const toggleMoreInfo = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsMoreInfoExpanded(!isMoreInfoExpanded);
-  };
-
-  const handleIncrease = () => {
-    if (cartItem) {
-      updateQuantity(cartItem.id, quantity + 1, product.id);
-    }
-  };
-
-  const handleDecrease = () => {
-    if (cartItem) {
-      updateQuantity(cartItem.id, quantity - 1, product.id);
-    }
   };
 
   return (
@@ -175,10 +160,7 @@ const ProductDetailsScreen = ({ navigation, route }) => {
       <StickyActionBar 
         onGoToCart={() => navigation.navigate('CartScreen')}
         onAddToCart={() => addToCart(product.id, 1, product)}
-        onIncrease={handleIncrease}
-        onDecrease={handleDecrease}
         cartCount={getCartCount()}
-        quantity={quantity}
       />
     </SafeAreaView>
   );
