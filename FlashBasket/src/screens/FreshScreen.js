@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -10,7 +10,7 @@ import { useCart } from '../redux/CartContext';
 import DynamicCartBar from '../components/DynamicCartBar';
 
 const FreshScreen = ({ navigation }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { getCartCount, getCartTotal } = useCart();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +60,7 @@ const FreshScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
       <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Icon name="arrow-left" size={24} color={theme.colors.text} />

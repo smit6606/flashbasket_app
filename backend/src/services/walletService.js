@@ -3,8 +3,8 @@ const { Wallet, WalletTransaction, sequelize } = require('../models');
 class WalletService {
   async getWallet(userId) {
     let wallet = await Wallet.findOne({ where: { userId } });
-    if (!wallet) wallet = await Wallet.create({ userId });
-    return { success: true, data: wallet };
+    if (!wallet) wallet = await Wallet.create({ userId, balance: 0 });
+    return wallet;
   }
 
   async addMoney(userId, amount) {
@@ -26,7 +26,7 @@ class WalletService {
       }, { transaction: t });
 
       await t.commit();
-      return { success: true, data: wallet };
+      return wallet;
     } catch (error) {
       await t.rollback();
       throw error;
@@ -38,7 +38,7 @@ class WalletService {
       where: { userId },
       order: [['createdAt', 'DESC']]
     });
-    return { success: true, data: history };
+    return history;
   }
 }
 

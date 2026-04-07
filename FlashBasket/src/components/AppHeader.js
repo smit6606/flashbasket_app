@@ -6,44 +6,44 @@ import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../redux/UserContext';
 
 const AppHeader = ({ onLocationPress }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { selectedAddress, wallet } = useUser();
   const navigation = useNavigation();
 
   return (
-    <View style={[styles.container, { backgroundColor: '#fef0e3' }]}>
+    <View style={[styles.container, { backgroundColor: isDark ? theme.colors.background : theme.colors.background }]}>
       <TouchableOpacity 
         style={styles.leftSection}
         onPress={onLocationPress}
       >
         <View style={styles.deliveryRow}>
-          <MIcon name="lightning-bolt" size={24} color="#000" />
-          <Text style={styles.deliveryTimeText}>5 minutes</Text>
+          <MIcon name="lightning-bolt" size={24} color={isDark ? theme.colors.primary : "#000"} />
+          <Text style={[styles.deliveryTimeText, { color: theme.colors.text }]}>5 minutes</Text>
         </View>
         <View style={styles.locationRow}>
-          <Text style={[styles.locationText, { color: '#555' }]} numberOfLines={1}>
+          <Text style={[styles.locationText, { color: theme.colors.textSecondary }]} numberOfLines={1}>
             {selectedAddress ? `${selectedAddress.name || 'Home'} - ${selectedAddress.fullAddress || ''}` : 'Select Location'}
           </Text>
-          <MIcon name="chevron-down" size={18} color="#555" />
+          <MIcon name="chevron-down" size={18} color={theme.colors.textSecondary} />
         </View>
       </TouchableOpacity>
 
       <View style={styles.rightSection}>
         <TouchableOpacity 
-          style={[styles.walletButton, { backgroundColor: '#fff' }]}
+          style={[styles.walletButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: isDark ? 1 : 0 }]}
           onPress={() => navigation.navigate('WalletScreen')}
         >
           <View style={styles.walletIconContainer}>
             <MIcon name="wallet" size={18} color="#fff" />
           </View>
-          <Text style={styles.walletAmount}>₹{wallet.balance.toFixed(0)}</Text>
+          <Text style={[styles.walletAmount, { color: theme.colors.text }]}>₹{wallet.balance.toFixed(0)}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile')}
         >
-          <MIcon name="account-circle" size={32} color="#000" />
+          <MIcon name="account-circle" size={32} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
     </View>
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    backgroundColor: '#fef3e3',
+    paddingVertical: 10,
   },
   leftSection: {
     flex: 1,
@@ -71,7 +71,6 @@ const styles = StyleSheet.create({
   deliveryTimeText: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#000',
     letterSpacing: -0.5,
   },
   locationRow: {
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
   walletAmount: {
     fontWeight: '900',
     fontSize: 15,
-    color: '#000',
   },
   profileButton: {
     padding: 2,

@@ -58,8 +58,8 @@ export const UserProvider = ({ children }) => {
       const balanceRes = await userService.getWalletInfo();
       const historyRes = await userService.getWalletTransactions();
       
-      const balanceData = balanceRes.data?.data || {};
-      const historyData = historyRes.data?.data || [];
+      const balanceData = balanceRes.data?.data || balanceRes.data || {};
+      const historyData = historyRes.data?.data || historyRes.data || [];
 
       setWallet({ 
         balance: balanceData.balance || 0,

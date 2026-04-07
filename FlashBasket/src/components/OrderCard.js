@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
+import APP_CONFIG from '../config';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -58,14 +59,15 @@ const OrderCard = ({ order, onPress }) => {
                     backgroundColor: isDark ? theme.colors.surface : '#F9FAFB', 
                     marginLeft: index === 0 ? 0 : -20,
                     zIndex: 3 - index,
+                    borderColor: isDark ? theme.colors.surface : '#FFF',
                   }
                 ]}
               >
-                <Image source={{ uri: item.image }} style={styles.itemImage} />
+                <Image source={{ uri: (item.image && item.image.trim() !== '') ? item.image : APP_CONFIG.DEFAULT_PLACEHOLDER }} style={styles.itemImage} />
               </View>
             ))}
             {order.items.length > 3 && (
-              <View style={[styles.moreCount, { backgroundColor: theme.colors.surface }]}>
+              <View style={[styles.moreCount, { backgroundColor: theme.colors.surface, borderColor: isDark ? theme.colors.surface : '#FFF' }]}>
                 <Text style={[styles.moreText, { color: theme.colors.textSecondary }]}>
                   +{order.items.length - 3}
                 </Text>
@@ -161,7 +163,6 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -179,7 +180,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#FFF',
     zIndex: 0,
   },
   moreText: {

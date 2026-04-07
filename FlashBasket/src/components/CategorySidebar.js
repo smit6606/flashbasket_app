@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
+import APP_CONFIG from '../config';
 
 const CategorySidebar = ({ categories, activeCategory, onCategoryChange }) => {
   const { theme } = useTheme();
@@ -22,7 +23,7 @@ const CategorySidebar = ({ categories, activeCategory, onCategoryChange }) => {
               style={[
                 styles.categoryItem,
                 isActive && { 
-                  backgroundColor: theme.colors.white,
+                  backgroundColor: theme.colors.background,
                   borderLeftColor: theme.colors.primary,
                   borderLeftWidth: 4 
                 }
@@ -32,7 +33,7 @@ const CategorySidebar = ({ categories, activeCategory, onCategoryChange }) => {
               <View style={[styles.imageContainer, { 
                 backgroundColor: isActive ? theme.colors.primaryLight : theme.colors.background 
               }]}>
-                <Image source={{ uri: item.image }} style={styles.categoryImage} />
+                <Image source={{ uri: (item.image && item.image.trim() !== '') ? item.image : APP_CONFIG.DEFAULT_PLACEHOLDER }} style={styles.categoryImage} />
               </View>
               <Text style={[
                 styles.categoryName, 
@@ -54,7 +55,7 @@ const CategorySidebar = ({ categories, activeCategory, onCategoryChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '28%',
+    width: '25%',
     borderRightWidth: 1,
   },
   listContent: {

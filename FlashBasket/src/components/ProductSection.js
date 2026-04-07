@@ -4,13 +4,13 @@ import { useTheme } from '../constants/ThemeContext';
 import ProductCard from './ProductCard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const ProductSection = ({ title, data, onViewAll }) => {
+const ProductSection = ({ title, data, onViewAll, isBuyAgain = false }) => {
   const { theme } = useTheme();
 
   if (!data || data.length === 0) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderBottomColor: theme.colors.border }]}>
       <View style={styles.header}>
         <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
         <TouchableOpacity onPress={onViewAll} style={styles.headerBtn}>
@@ -24,7 +24,7 @@ const ProductSection = ({ title, data, onViewAll }) => {
         horizontal
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => <ProductCard product={item} variant="previous" />}
+        renderItem={({ item }) => <ProductCard product={item} variant="previous" showBuyAgainLabel={isBuyAgain} />}
         contentContainerStyle={styles.listContent}
         snapToInterval={180}
         decelerationRate="fast"
@@ -45,7 +45,6 @@ const styles = StyleSheet.create({
   container: {
     paddingVertical: 16,
     borderBottomWidth: 8,
-    borderBottomColor: '#f5f6fa',
   },
   header: {
     flexDirection: 'row',

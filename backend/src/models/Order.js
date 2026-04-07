@@ -78,7 +78,7 @@ const Order = sequelize.define('Order', {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  rewardGiven: {
+  cashbackGiven: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },

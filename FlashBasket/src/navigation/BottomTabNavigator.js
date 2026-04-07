@@ -24,10 +24,16 @@ const BottomTabNavigator = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: theme.colors.background,
+          backgroundColor: theme.colors.card, 
           borderTopColor: theme.colors.border,
-          height: 60,
-          paddingBottom: 8,
+          height: 64,
+          paddingBottom: 10,
+          borderTopWidth: 1,
+          elevation: 8,
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
           display: ['Fresh', 'BuyAgain'].includes(route.name) ? 'none' : 'flex',
 
         },

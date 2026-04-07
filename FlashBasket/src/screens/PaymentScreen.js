@@ -18,23 +18,24 @@ import orderService from '../services/orderService';
 import QRCode from 'react-native-qrcode-svg';
 
 const PaymentScreen = ({ navigation, route }) => {
-  const { amount, couponCode } = route.params;
+  const { orderSummary = {}, couponCode } = route.params || {};
   const { theme, isDark } = useTheme();
-  const { selectedAddress, wallet } = useUser();
+  const { selectedAddress, loadWalletBalance } = useUser();
   const { clearCart } = useCart();
   
   const [selectedMethod, setSelectedMethod] = useState('cod');
-  const [showUPIQR, setShowUPIQR] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [useWalletBalance, setUseWalletBalance] = useState(false);
-
-  const baseAmount = parseFloat(amount);
-  const availableWallet = wallet?.balance || 0;
-  const walletDeduction = useWalletBalance ? Math.min(availableWallet, baseAmount) : 0;
-  const finalAmount = Math.max(0, baseAmount - walletDeduction);
-
-  const upiString = `upi://pay?pa=flashbasket@paytm&pn=FlashBasket&am=${finalAmount}&cu=INR`;
-
+  
+  const itemsTotal = orderSummary.itemsTotal || 0;
+  const discount = orderSummary.discount || 0;
+  const deliveryFee = orderSummary.deliveryFee || 0;
+  const handlingFee = orderSummary.handlingFee || 0;
+  const walletDeduction = orderSummary.walletUsed || 0;
+  const finalAmount = parseFloat(orderSummary.grandTotal || 0);
+  
+  const isFullyPaidByWallet = finalAmount === 0;
+  
   const handlePlaceOrder = async (isInstant = false) => {
     if (!selectedAddress) {
       Alert.alert('Error', 'Please select a delivery address');
@@ -45,15 +46,17 @@ const PaymentScreen = ({ navigation, route }) => {
     try {
       const orderData = {
         addressId: selectedAddress.id,
-        paymentMethod: (finalAmount === 0 || isInstant) ? 'cod' : selectedMethod,
+        paymentMethod: isFullyPaidByWallet ? 'wallet' : (isInstant ? 'cod' : selectedMethod),
         couponCode: couponCode || null,
-        useWallet: useWalletBalance,
+        useWallet: walletDeduction > 0,
+        orderSummary: orderSummary 
       };
 
       const response = await orderService.createOrder(orderData);
       
       if (response && response.data) {
-        // Success
+        // Refresh wallet balance immediately after order
+        await loadWalletBalance();
         clearCart();
         navigation.navigate('OrderSuccessScreen', { 
           order: response.data, 
@@ -91,16 +94,21 @@ const PaymentScreen = ({ navigation, route }) => {
     </TouchableOpacity>
   );
 
+  const upiString = `upi://pay?pa=flashbasket@paytm&pn=FlashBasket&am=${finalAmount}&cu=INR`;
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
       
       <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={[styles.backButton, { backgroundColor: theme.colors.surface }]}
+        >
           <Icon name="arrow-back" size={24} color={theme.colors.text} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Payment</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
@@ -121,63 +129,70 @@ const PaymentScreen = ({ navigation, route }) => {
         {/* Bill Summary */}
         <View style={styles.section}>
           <BillSummary 
-            subtotal={route.params.subtotal} 
-            discount={route.params.discount} 
-            deliveryCharge={route.params.deliveryCharge} 
+            subtotal={itemsTotal} 
+            discount={discount} 
+            deliveryFee={deliveryFee} 
+            handlingFee={handlingFee}
+            walletUsed={walletDeduction}
+            total={finalAmount} 
           />
         </View>
 
-        {/* Wallet Use Checkbox */}
-        {availableWallet > 0 && (
-          <TouchableOpacity 
-            style={[styles.walletToggleCard, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]}
-            onPress={() => setUseWalletBalance(!useWalletBalance)}
-            activeOpacity={0.7}
-          >
-            <View style={styles.walletToggleInfo}>
-              <Icon name="wallet" size={24} color={theme.colors.primary} />
-              <View style={{ marginLeft: 12 }}>
-                <Text style={[styles.walletToggleTitle, { color: theme.colors.text }]}>Use Flash Wallet</Text>
-                <Text style={{ color: theme.colors.textSecondary, fontSize: 13 }}>Available Balance: ₹{availableWallet}</Text>
+        {/* Payment Methods Section */}
+        {!isFullyPaidByWallet ? (
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Payment Methods</Text>
+            <PaymentMethod 
+              id="cod"
+              name="Cash on Delivery"
+              icon="wallet"
+              description="Pay cash when item is delivered"
+            />
+            <PaymentMethod 
+              id="upi"
+              name="UPI Payment"
+              icon="qr-code"
+              description="Scan and pay using any UPI app"
+            />
+
+            {selectedMethod === 'upi' && (
+              <View style={[styles.upiCard, { backgroundColor: theme.colors.surface }]}>
+                <Text style={[styles.upiTitle, { color: theme.colors.text }]}>Scan & Pay</Text>
+                <View style={styles.qrContainer}>
+                  <QRCode value={upiString} size={150} />
+                </View>
+                <Text style={[styles.qrTotal, { color: theme.colors.primary }]}>Total Amount: ₹{finalAmount}</Text>
+                
+                <TouchableOpacity 
+                  style={styles.checkboxContainer} 
+                  onPress={() => setPaymentConfirmed(!paymentConfirmed)}
+                >
+                  <View style={[styles.checkbox, paymentConfirmed && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }]}>
+                    {paymentConfirmed && <Icon name="checkmark" size={14} color="#FFF" />}
+                  </View>
+                  <Text style={[styles.checkboxLabel, { color: theme.colors.text }]}>I have completed the payment</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={[
+                    styles.payConfirmBtn, 
+                    { backgroundColor: paymentConfirmed ? theme.colors.primary : theme.colors.textTertiary }
+                  ]}
+                  onPress={() => handlePlaceOrder()}
+                  disabled={!paymentConfirmed || loading}
+                >
+                  <Text style={styles.payConfirmText}>{loading ? 'Placing Order...' : 'Verify & Place Order'}</Text>
+                </TouchableOpacity>
               </View>
-            </View>
-            
-            <View style={[styles.checkbox, useWalletBalance && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }]}>
-               {useWalletBalance && <Icon name="checkmark" size={16} color="#FFF" />}
-            </View>
-          </TouchableOpacity>
-        )}
-
-        {/* Payment Methods */}
-        <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Payment Methods</Text>
-          <PaymentMethod 
-            id="cod"
-            name="Cash on Delivery"
-            icon="wallet"
-            description="Pay cash when item is delivered"
-          />
-          <PaymentMethod 
-            id="upi"
-            name="UPI Payment"
-            icon="qr-code"
-            description="Scan and pay using any UPI app"
-          />
-        </View>
-
-        {selectedMethod === 'upi' && (
-          <View style={[styles.upiCard, { backgroundColor: theme.colors.surface }]}>
-            <Text style={[styles.upiTitle, { color: theme.colors.text }]}>Scan & Pay</Text>
-            <View style={styles.qrContainer}>
-              <QRCode value={upiString} size={150} />
-            </View>
-            <Text style={[styles.qrTotal, { color: theme.colors.primary }]}>Total Amount: ₹{finalAmount}</Text>
-            <TouchableOpacity 
-              style={[styles.payConfirmBtn, { backgroundColor: theme.colors.primary }]}
-              onPress={() => handlePlaceOrder()}
-            >
-              <Text style={styles.payConfirmText}>I have paid</Text>
-            </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <View style={[styles.walletPaidCard, { backgroundColor: theme.colors.primary + '10', borderColor: theme.colors.primary }]}>
+             <Icon name="checkmark-circle" size={40} color={theme.colors.primary} />
+             <Text style={[styles.walletPaidTitle, { color: theme.colors.text }]}>Order Fully Paid by Wallet</Text>
+             <Text style={[styles.walletPaidDesc, { color: theme.colors.textSecondary }]}>
+               No further payment is required. You can proceed to place your order.
+             </Text>
           </View>
         )}
       </ScrollView>
@@ -190,20 +205,38 @@ const PaymentScreen = ({ navigation, route }) => {
         </View>
         
         <View style={styles.buttonRow}>
-          <TouchableOpacity 
-            style={[styles.instantBtn, { borderColor: theme.colors.primary }]}
-            onPress={() => handlePlaceOrder(true)}
-            disabled={loading}
-          >
-            <Text style={[styles.instantBtnText, { color: theme.colors.primary }]}>Instant Order</Text>
-          </TouchableOpacity>
+          {!isFullyPaidByWallet && (
+            <TouchableOpacity 
+              style={[styles.instantBtn, { borderColor: theme.colors.primary }]}
+              onPress={() => handlePlaceOrder(true)}
+              disabled={loading}
+            >
+              <Text style={[styles.instantBtnText, { color: theme.colors.primary }]}>Instant Order</Text>
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity 
-            style={[styles.placeBtn, { backgroundColor: theme.colors.primary }]}
-            onPress={() => selectedMethod === 'cod' ? handlePlaceOrder() : Alert.alert('Payment Required', 'Please complete UPI payment first')}
-            disabled={loading || selectedMethod === 'upi'}
+            style={[
+              styles.placeBtn, 
+              { 
+                backgroundColor: (isFullyPaidByWallet || selectedMethod === 'cod' || paymentConfirmed) ? theme.colors.primary : theme.colors.textTertiary,
+                flex: isFullyPaidByWallet ? 1 : 1 
+              }
+            ]}
+            onPress={() => {
+              if (isFullyPaidByWallet || selectedMethod === 'cod') {
+                handlePlaceOrder();
+              } else if (!paymentConfirmed) {
+                Alert.alert('Payment Required', 'Please complete UPI payment and check the confirmation box');
+              } else {
+                handlePlaceOrder();
+              }
+            }}
+            disabled={loading || (!isFullyPaidByWallet && selectedMethod === 'upi' && !paymentConfirmed)}
           >
-            <Text style={styles.placeBtnText}>Place Order</Text>
+            <Text style={styles.placeBtnText}>
+              {loading ? 'Please wait...' : (isFullyPaidByWallet ? 'Place Wallet Order' : 'Place Order')}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -216,8 +249,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   headerTitle: { fontSize: 18, fontWeight: '800' },
   scrollContainer: { padding: 16 },
@@ -236,7 +279,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 1.5,
     marginBottom: 12,
   },
   methodIcon: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
@@ -247,20 +290,25 @@ const styles = StyleSheet.create({
   radioDot: { width: 10, height: 10, borderRadius: 5 },
   upiCard: { 
     padding: 20, 
-    borderRadius: 16, 
+    borderRadius: 20, 
     alignItems: 'center', 
-    marginTop: -8, 
+    marginTop: 8, 
     marginBottom: 24, 
     elevation: 4, 
     shadowColor: '#000', 
     shadowOpacity: 0.1, 
-    shadowRadius: 10 
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: '#eee'
   },
   upiTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 16 },
   qrContainer: { padding: 10, backgroundColor: '#fff', borderRadius: 12 },
   qrTotal: { marginTop: 12, fontWeight: 'bold', fontSize: 16 },
-  payConfirmBtn: { marginTop: 20, paddingHorizontal: 30, paddingVertical: 12, borderRadius: 25 },
+  payConfirmBtn: { marginTop: 20, paddingHorizontal: 30, paddingVertical: 14, borderRadius: 25, width: '100%', alignItems: 'center' },
   payConfirmText: { color: '#fff', fontWeight: 'bold' },
+  checkboxLabel: { fontSize: 14, fontWeight: '600', marginLeft: 10 },
+  checkboxContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 20, paddingHorizontal: 4 },
+  checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: '#CCC', justifyContent: 'center', alignItems: 'center' },
   footer: { padding: 16, borderTopWidth: 1 },
   priceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   totalLabel: { fontSize: 14 },
@@ -270,31 +318,25 @@ const styles = StyleSheet.create({
   instantBtnText: { fontWeight: '800', fontSize: 15 },
   placeBtn: { flex: 1, height: 54, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   placeBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
-  walletToggleCard: {
-    flexDirection: 'row',
+  walletPaidCard: {
+    padding: 24,
+    borderRadius: 20,
     alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
     marginBottom: 24,
   },
-  walletToggleInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  walletPaidTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 12,
+    marginBottom: 8,
   },
-  walletToggleTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#CCC',
-    justifyContent: 'center',
-    alignItems: 'center',
+  walletPaidDesc: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
   }
 });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -12,7 +12,7 @@ import { useCart } from '../redux/CartContext';
 import DynamicCartBar from '../components/DynamicCartBar';
 
 const BuyAgainScreen = ({ navigation }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { getCartCount, getCartTotal } = useCart();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([{ id: 'all', name: 'All Items', icon: 'heart' }]);
@@ -44,27 +44,8 @@ const BuyAgainScreen = ({ navigation }) => {
   const fetchFrequentItems = async () => {
     try {
       setError(null);
-      const data = await orderService.getOrderHistory();
-      const orders = data.orders || [];      
-      
-      const productMap = {};
-      orders.forEach(order => {
-        if (order.items) {
-          order.items.forEach(item => {
-            if (item.product) {
-              const pid = item.product.id;
-              if (productMap[pid]) {
-                productMap[pid].count += item.quantity;
-              } else {
-                productMap[pid] = { ...item.product, count: item.quantity };
-              }
-            }
-          });
-        }
-      });
-      
-      const sortedProducts = Object.values(productMap).sort((a, b) => b.count - a.count);
-      setProducts(sortedProducts);
+      const res = await orderService.getBuyAgainProducts();
+      setProducts(res.data || []);
     } catch (err) {
       console.error('Error fetching frequent items:', err);
       setError('Could not load frequent items.');
@@ -83,6 +64,7 @@ const BuyAgainScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
       <View style={[styles.header, { borderBottomColor: theme.colors.border }]}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Icon name="chevron-back" size={28} color={theme.colors.text} />
@@ -200,7 +182,6 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     paddingVertical: 12,
-    backgroundColor: '#fff',
   },
   tabScroll: {
     paddingHorizontal: 16,

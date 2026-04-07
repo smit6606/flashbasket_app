@@ -29,17 +29,32 @@ const CartScreenSnapshot = ({ theme }) => {
 const CartScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
   const { cart, loading, updateQuantity, removeFromCart, getCartTotal } = useCart();
-  const { addresses, selectedAddress, setSelectedAddress, deleteAddress } = useUser();
+  const { addresses, selectedAddress, setSelectedAddress, deleteAddress, wallet } = useUser();
   
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [appliedOffer, setAppliedOffer] = useState(null);
+  const [useWalletBalance, setUseWalletBalance] = useState(false);
 
   const cartItems = cart?.items || [];
   const subtotal = getCartTotal();
   const discount = appliedOffer ? appliedOffer.discountAmount : 0; 
-  const deliveryCharge = subtotal > 500 || subtotal === 0 ? 0 : 25;
+  
+  // SINGLE SOURCE OF TRUTH: Delivery Charging Logic
+  const deliveryFee = subtotal > 500 || subtotal === 0 ? 0 : 25;
   const handlingFee = subtotal > 0 ? 5 : 0;
-  const grandTotal = subtotal - discount + deliveryCharge + handlingFee;
+  
+  const baseAmount = subtotal - discount + deliveryFee + handlingFee;
+  const walletUsed = useWalletBalance ? Math.min(wallet?.balance || 0, baseAmount) : 0;
+  const grandTotal = Math.max(0, baseAmount - walletUsed);
+  
+  const orderSummary = {
+    itemsTotal: subtotal,
+    discount: discount,
+    deliveryFee: deliveryFee,
+    handlingFee: handlingFee,
+    walletUsed: walletUsed, 
+    grandTotal: grandTotal
+  };
 
   const handleIncrease = (id) => {
     const item = cartItems.find(i => i.id === id);
@@ -68,10 +83,7 @@ const CartScreen = ({ navigation }) => {
       return;
     }
     navigation.navigate('PaymentScreen', { 
-      amount: grandTotal,
-      subtotal: subtotal,
-      discount: discount,
-      deliveryCharge: deliveryCharge,
+      orderSummary: orderSummary,
       couponCode: appliedOffer?.code
     });
   };
@@ -120,10 +132,11 @@ const CartScreen = ({ navigation }) => {
       ) : cartItems.length === 0 ? (
         <Animated.View entering={FadeIn} style={styles.emptyContainer}>
           <Icon name="cart-outline" size={100} color={theme.colors.border} />
-          <Text style={[styles.emptyText, { color: theme.colors.textSecondary }]}>Your cart is empty</Text>
+          <Text style={[styles.emptyText, { color: theme.colors.text }]}>Your cart is empty</Text>
+          <Text style={[styles.emptySubtext, { color: theme.colors.textSecondary }]}>Add items to continue</Text>
           <TouchableOpacity 
             style={[styles.shopNowBtn, { backgroundColor: theme.colors.primary }]} 
-            onPress={() => navigation.navigate('Main')}
+            onPress={() => navigation.navigate('BottomTabs', { screen: 'Home' })}
           >
             <Text style={styles.shopNowText}>Shop Now</Text>
           </TouchableOpacity>
@@ -214,12 +227,39 @@ const CartScreen = ({ navigation }) => {
               />
             </View>
 
+            {/* Wallet Section */}
+            {wallet?.balance > 0 && (
+              <View style={styles.sectionPx}>
+                 <TouchableOpacity 
+                   style={[styles.walletCard, { backgroundColor: theme.colors.surface, borderColor: useWalletBalance ? theme.colors.primary : theme.colors.border }]}
+                   onPress={() => setUseWalletBalance(!useWalletBalance)}
+                   activeOpacity={0.7}
+                 >
+                    <View style={styles.walletInfo}>
+                       <View style={[styles.walletIconContainer, { backgroundColor: theme.colors.primary + '15' }]}>
+                          <Icon name="wallet" size={20} color={theme.colors.primary} />
+                       </View>
+                       <View>
+                          <Text style={[styles.walletLabel, { color: theme.colors.text }]}>Use ₹{walletUsed} from wallet</Text>
+                          <Text style={[styles.walletSubLabel, { color: theme.colors.textSecondary }]}>You have ₹{wallet.balance} in your wallet</Text>
+                       </View>
+                    </View>
+                    <View style={[styles.checkbox, useWalletBalance && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }]}>
+                       {useWalletBalance && <Icon name="checkmark" size={16} color="#FFF" />}
+                    </View>
+                 </TouchableOpacity>
+              </View>
+            )}
+
             {/* Bill Summary */}
             <View style={styles.sectionPx}>
               <BillSummary 
-                subtotal={subtotal} 
-                discount={discount} 
-                deliveryCharge={deliveryCharge} 
+                subtotal={orderSummary.itemsTotal} 
+                discount={orderSummary.discount} 
+                deliveryFee={orderSummary.deliveryFee} 
+                handlingFee={orderSummary.handlingFee}
+                walletUsed={orderSummary.walletUsed}
+                total={orderSummary.grandTotal}
               />
             </View>
 
@@ -230,7 +270,7 @@ const CartScreen = ({ navigation }) => {
           <View style={styles.bottomBarWrapper}>
             <AddressSelector 
               isAddressSelected={!!selectedAddress}
-              amount={grandTotal}
+              amount={orderSummary.grandTotal}
               onPress={handleCheckoutPress}
             />
           </View>
@@ -369,10 +409,15 @@ const styles = StyleSheet.create({
     paddingBottom: 100,
   },
   emptyText: {
-    fontSize: 18,
-    fontWeight: '700',
+    fontSize: 20,
+    fontWeight: '800',
     marginTop: 20,
-    opacity: 0.6,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 8,
+    opacity: 0.8,
   },
   shopNowBtn: {
     marginTop: 30,
@@ -391,7 +436,45 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-  }
+  },
+  walletCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1.5,
+  },
+  walletInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  walletIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  walletLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  walletSubLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: '#CCC',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
 
 export default CartScreen;

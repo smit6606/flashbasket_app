@@ -8,7 +8,7 @@
 
 const APP_CONFIG = {
   // API Config (Defaults from .env)
-  BASE_URL: 'https://rsd58pbr-5000.inc1.devtunnels.ms/api',
+  BASE_URL: 'https://rsd58pbr-5000.inc1.devtunnels.ms/api/',
   IMAGE_BASE_URL: 'https://rsd58pbr-5000.inc1.devtunnels.ms',
   SOCKET_URL: 'https://rsd58pbr-5000.inc1.devtunnels.ms',
   TIMEOUT: 15000,

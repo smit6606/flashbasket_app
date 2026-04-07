@@ -9,6 +9,7 @@ router.use(authMiddleware);
 router.post('/place', orderController.createOrder);
 router.post('/create', orderController.createOrder); // Backward compatibility
 router.get('/history', orderController.getOrderHistory);
+router.get('/buy-again', orderController.getBuyAgain);
 router.get('/:id', orderController.getOrderById);
 router.post('/verify-otp/:id', orderController.verifyOTP);
 

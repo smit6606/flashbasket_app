@@ -96,7 +96,7 @@ const WalletScreen = ({ navigation }) => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Recent Transactions</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('WalletHistoryScreen')}>
                <Text style={[styles.viewAll, { color: theme.colors.primary }]}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -109,7 +109,7 @@ const WalletScreen = ({ navigation }) => {
                   title={tx.description}
                   date={new Date(tx.createdAt).toLocaleDateString()}
                   amount={tx.amount}
-                  type={tx.type}
+                  type={tx.type?.toUpperCase()}
                   theme={theme}
                   isLast={index === (wallet.transactions.slice(0, 5).length - 1)}
                 />

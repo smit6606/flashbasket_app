@@ -19,6 +19,10 @@ const orderService = {
 
   verifyOrderOTP: async (orderId, otp) => {
     return api.post(`/order/verify-otp/${orderId}`, { otp });
+  },
+
+  getBuyAgainProducts: async () => {
+    return api.get('/order/buy-again');
   }
 };
 

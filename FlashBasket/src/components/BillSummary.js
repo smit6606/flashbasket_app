@@ -3,11 +3,11 @@ import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const BillSummary = ({ subtotal, discount, deliveryCharge }) => {
+const BillSummary = ({ subtotal, discount, deliveryFee, handlingFee = 0, walletUsed = 0, total: propTotal }) => {
   const { theme, isDark } = useTheme();
   
-  const handlingFee = subtotal > 0 ? 5 : 0;
-  const total = subtotal - discount + deliveryCharge + handlingFee;
+  // Use provided total or calculate it
+  const total = propTotal !== undefined ? propTotal : (subtotal - discount + deliveryFee + handlingFee - walletUsed);
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -29,22 +29,31 @@ const BillSummary = ({ subtotal, discount, deliveryCharge }) => {
         
         <View style={styles.row}>
           <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Delivery Fee</Text>
-          <Text style={[styles.value, { color: deliveryCharge === 0 ? '#10B981' : theme.colors.text }]}>
-            {deliveryCharge === 0 ? 'FREE' : `₹${deliveryCharge}`}
+          <Text style={[styles.value, { color: deliveryFee === 0 ? '#10B981' : theme.colors.text }]}>
+            {deliveryFee === 0 ? 'Free Delivery' : `₹${deliveryFee}`}
           </Text>
         </View>
 
-        <View style={styles.row}>
-          <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Handling Fee</Text>
-          <Text style={[styles.value, { color: handlingFee === 0 ? '#10B981' : theme.colors.text }]}>
-             {handlingFee === 0 ? 'FREE' : `₹${handlingFee}`}
-          </Text>
-        </View>
+        {handlingFee > 0 && (
+          <View style={styles.row}>
+            <Text style={[styles.label, { color: theme.colors.textSecondary }]}>Handling Fee</Text>
+            <Text style={[styles.value, { color: theme.colors.text }]}>
+               ₹{handlingFee}
+            </Text>
+          </View>
+        )}
 
         {discount > 0 && (
           <View style={styles.row}>
             <Text style={[styles.label, { color: '#10B981', fontWeight: '600' }]}>Discount</Text>
             <Text style={[styles.value, { color: '#10B981', fontWeight: '600' }]}>-₹{discount}</Text>
+          </View>
+        )}
+
+        {walletUsed > 0 && (
+          <View style={styles.row}>
+            <Text style={[styles.label, { color: theme.colors.primary, fontWeight: '600' }]}>Wallet Used</Text>
+            <Text style={[styles.value, { color: theme.colors.primary, fontWeight: '600' }]}>-₹{walletUsed}</Text>
           </View>
         )}
         

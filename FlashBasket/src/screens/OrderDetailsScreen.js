@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
+import APP_CONFIG from '../config';
 import orderService from '../services/orderService';
 import Animated, { FadeInUp, SlideInDown } from 'react-native-reanimated';
 
@@ -156,7 +157,10 @@ const OrderDetailsScreen = ({ route, navigation }) => {
           {order.items?.map((item, index) => (
             <View key={index} style={[styles.itemRow, index !== 0 && { borderTopWidth: 1, borderTopColor: theme.colors.border + '30', paddingTop: 12 }]}>
               <View style={[styles.itemImageBg, { backgroundColor: isDark ? theme.colors.background : '#F9F9F9' }]}>
-                <Image source={{ uri: item.product?.image }} style={styles.itemImage} />
+                <Image 
+                  source={{ uri: (item.product?.image && item.product.image.trim() !== '') ? item.product.image : APP_CONFIG.DEFAULT_PLACEHOLDER }} 
+                  style={styles.itemImage} 
+                />
               </View>
               <View style={styles.itemMain}>
                 <Text style={[styles.itemName, { color: theme.colors.text }]} numberOfLines={1}>{item.product?.name}</Text>
@@ -174,13 +178,19 @@ const OrderDetailsScreen = ({ route, navigation }) => {
             <Text style={[styles.billValue, { color: theme.colors.text }]}>₹{order.subtotal}</Text>
           </View>
           <View style={styles.billRow}>
-            <Text style={[styles.billLabel, { color: theme.colors.textSecondary }]}>Delivery Partner Fee</Text>
+            <Text style={[styles.billLabel, { color: theme.colors.textSecondary }]}>Delivery & Handling</Text>
             <Text style={[styles.billValue, { color: theme.colors.text }]}>₹{order.deliveryCharge}</Text>
           </View>
           <View style={styles.billRow}>
              <Text style={[styles.billLabel, { color: '#27AE60' }]}>Promo Discount</Text>
              <Text style={[styles.billValue, { color: '#27AE60' }]}>- ₹{order.discount || 0}</Text>
           </View>
+          {order.walletUsed > 0 && (
+            <View style={styles.billRow}>
+              <Text style={[styles.billLabel, { color: theme.colors.primary }]}>Wallet Deduction</Text>
+              <Text style={[styles.billValue, { color: theme.colors.primary }]}>- ₹{order.walletUsed}</Text>
+            </View>
+          )}
           <View style={[styles.finalDivider, { backgroundColor: theme.colors.border }]} />
           <View style={styles.totalRow}>
             <Text style={[styles.totalLabel, { color: theme.colors.text }]}>Total Bill</Text>

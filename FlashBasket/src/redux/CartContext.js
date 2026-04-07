@@ -26,14 +26,10 @@ export const CartProvider = ({ children }) => {
   const loadCart = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      console.log('[DEBUG-CONTEXT] loadCart: Calling cartService.getCart()...');
       const data = await cartService.getCart();
-      console.log('[DEBUG-CONTEXT] loadCart: API response received:', data);
       setCart(data.data); // Backend returns { data: cartObj }
-      console.log('[DEBUG-CONTEXT] loadCart: State updated.');
       setError(null);
     } catch (err) {
-      console.error('[DEBUG-CONTEXT] loadCart: Error:', err);
       setError(err.message || 'Failed to load cart');
     } finally {
       if (showLoading) setLoading(false);
@@ -45,8 +41,6 @@ export const CartProvider = ({ children }) => {
       Alert.alert('Session Required', 'Please login to start shopping!');
       return;
     }
-
-    console.log('[DEBUG-CONTEXT] Optimistic addToCart: ProductID:', productId);
 
     // 1. Optimistic UI Update
     setCart(prevCart => {
@@ -76,7 +70,6 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (cartItemId, quantity, productId) => {
-    console.log('[DEBUG-CONTEXT] Optimistic updateQuantity: ItemID:', cartItemId, 'Quantity:', quantity);
 
     if (quantity < 1) {
       return removeFromCart(cartItemId, productId);
@@ -99,9 +92,16 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (cartItemId, productId) => {
-    console.log('[DEBUG-CONTEXT] Optimistic removeFromCart: ItemID:', cartItemId);
+    // 1. Clear any pending debounced syncs for this product
+    if (productId && syncTimeouts.current[productId]) {
+      clearTimeout(syncTimeouts.current[productId]);
+      delete syncTimeouts.current[productId];
+    } else if (cartItemId && syncTimeouts.current[cartItemId]) {
+      clearTimeout(syncTimeouts.current[cartItemId]);
+      delete syncTimeouts.current[cartItemId];
+    }
 
-    // 1. Optimistic UI Update
+    // 2. Optimistic UI Update
     setCart(prevCart => {
       if (!prevCart || !prevCart.items) return prevCart;
       const items = prevCart.items.filter(item => 
@@ -110,13 +110,17 @@ export const CartProvider = ({ children }) => {
       return { ...prevCart, items };
     });
 
+    // 3. Skip backend call if it's a temporary ID
+    if (typeof cartItemId === 'string' && cartItemId.startsWith('temp-')) {
+      return; 
+    }
+
     try {
       await cartService.removeFromCart(cartItemId);
-      // Wait a bit before reloading to ensure backend is fully updated
       setTimeout(() => loadCart(false), 500);
     } catch (err) {
       console.error('Error removing from cart:', err);
-      loadCart(false); // Rollback to actual state
+      loadCart(false); 
     }
   };
 
@@ -126,7 +130,6 @@ export const CartProvider = ({ children }) => {
     }
 
     syncTimeouts.current[id] = setTimeout(async () => {
-      console.log('[DEBUG-CONTEXT] Syncing cart to backend for ID:', id);
       try {
         // Find the current quantity in our optimistic state
         // We use a small trick by defining a helper to call API

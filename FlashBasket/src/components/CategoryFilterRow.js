@@ -3,10 +3,9 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator
 import { useTheme } from '../constants/ThemeContext';
 import categoryService from '../services/categoryService';
 
-const CategoryFilterRow = ({ onCategorySelect }) => {
-  const { theme } = useTheme();
+const CategoryFilterRow = ({ onCategorySelect, activeCategory = 'all' }) => {
+  const { theme, isDark } = useTheme();
   const [categories, setCategories] = useState([]);
-  const [activeCategoryId, setActiveCategoryId] = useState('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,31 +35,32 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
           <ActivityIndicator size="small" color={theme.colors.primary} style={styles.loader} />
         ) : (
           categories.map((category) => {
-            const isActive = activeCategoryId === category.id;
+            const isActive = activeCategory === category.id;
             return (
               <TouchableOpacity
                 key={category.id}
                 style={styles.categoryItem}
                 onPress={() => {
-                  setActiveCategoryId(category.id);
-                  if (onCategorySelect) onCategorySelect(category.id === 'all' ? null : category.id);
+                  if (onCategorySelect) onCategorySelect(category.id === 'all' ? 'all' : category.id);
                 }}
                 activeOpacity={0.7}
               >
                 <View style={[
                   styles.circle, 
                   { 
-                    backgroundColor: isActive ? '#fef0e3' : '#fff',
-                    borderColor: isActive ? '#000' : '#f0f0f0',
+                    backgroundColor: isActive 
+                      ? theme.colors.primary 
+                      : (isDark ? '#1F1F1F' : '#FFFFFF'),
+                    borderColor: isActive ? theme.colors.primary : theme.colors.border,
                   }
                 ]}>
                   {category.image && category.image.trim() !== '' ? (
                     <Image 
                       source={{ uri: category.image.trim() }} 
-                      style={[styles.catImage]} 
+                      style={[styles.catImage, isActive && { tintColor: '#FFFFFF' }]} 
                     />
                   ) : (
-                    <Text style={[styles.initial, { color: isActive ? '#000' : '#999' }]}>
+                    <Text style={[styles.initial, { color: isActive ? '#FFFFFF' : theme.colors.textSecondary }]}>
                       {category.name?.[0]?.toUpperCase()}
                     </Text>
                   )}
@@ -70,7 +70,7 @@ const CategoryFilterRow = ({ onCategorySelect }) => {
                   style={[
                     styles.categoryText,
                     { 
-                      color: isActive ? '#000' : '#777',
+                      color: isActive ? theme.colors.primary : theme.colors.textSecondary,
                       fontWeight: isActive ? '900' : '700',
                     },
                   ]}
@@ -99,19 +99,19 @@ const styles = StyleSheet.create({
     width: 70,
   },
   circle: {
-    width: 66,
-    height: 66,
-    borderRadius: 20, // More square-rounded like Zepto
+    width: 62,
+    height: 62,
+    borderRadius: 18,
     borderWidth: 1.5,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
     overflow: 'hidden',
-    elevation: 1,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+    elevation: 3,
   },
   catImage: {
     width: '60%',

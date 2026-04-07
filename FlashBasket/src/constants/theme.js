@@ -8,12 +8,13 @@ export const COLORS = {
     primary: '#00b894',
     secondary: '#ff7675',
     accent: '#fdcb6e',
-    background: '#f8f9fa',
+    background: '#F5F5F5', // Soft gray for SafeArea
     surface: '#ffffff',
-    text: '#2d3436',
+    card: '#FFFFFF',
+    text: '#1A1A1A',
     textSecondary: '#636e72',
     textTertiary: '#b2bec3',
-    border: '#dfe6e9',
+    border: '#E2E8F0',
     white: '#ffffff',
     primaryLight: '#e6f8f4',
     error: '#d63031',
@@ -25,12 +26,13 @@ export const COLORS = {
     primary: '#00b894',
     secondary: '#ff7675',
     accent: '#fdcb6e',
-    background: '#121212',
-    surface: '#1e1e1e',
-    text: '#ffffff',
-    textSecondary: '#b2bec3',
+    background: '#0F0F0F', // Deeper background
+    surface: '#1A1A1A', // Layered surface
+    card: '#202020', // Card surface
+    text: '#FFFFFF',
+    textSecondary: '#BBBBBB', // Higher contrast secondary text
     textTertiary: '#636e72',
-    border: '#2d3436',
+    border: '#2A2A2A', // Subtle borders
     white: '#ffffff',
     primaryLight: '#004d3d',
     error: '#ff4d4d',

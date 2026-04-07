@@ -38,7 +38,7 @@ const OrderSuccessScreen = ({ navigation, route }) => {
           <View style={styles.detailRow}>
             <Text style={[styles.detailLabel, { color: theme.colors.textSecondary }]}>Delivering to:</Text>
             <Text style={[styles.detailValue, { color: theme.colors.text }]} numberOfLines={2}>
-              {address?.fullAddress || address?.full_address}
+              {address?.fullAddress || order?.fullAddress || 'Selected Address'}
             </Text>
           </View>
         </Animated.View>
@@ -53,7 +53,10 @@ const OrderSuccessScreen = ({ navigation, route }) => {
           
           <TouchableOpacity 
             style={[styles.homeBtn]}
-            onPress={() => navigation.navigate('Main')}
+            onPress={() => navigation.reset({
+              index: 0,
+              routes: [{ name: 'BottomTabs', params: { screen: 'Home' } }],
+            })}
           >
             <Text style={[styles.homeBtnText, { color: theme.colors.textSecondary }]}>Back to Home</Text>
           </TouchableOpacity>

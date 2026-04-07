@@ -1,46 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, ScrollView, Image, StyleSheet, Dimensions, Animated, Text } from 'react-native';
+import { View, ScrollView, Image, StyleSheet, Dimensions, Animated, Text, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../constants/ThemeContext';
+import { useCart } from '../redux/CartContext';
 
 const { width } = Dimensions.get('window');
 
-const banners = [
+const BANNERS = [
   {
     id: 1,
-    image: 'https://img.freepik.com/free-vector/grocery-store-banner-template_23-2148705662.jpg',
-    type: 'Best Deals',
+    title1: 'FLAT ₹50 OFF',
+    title2: 'ON YOUR FIRST ORDER',
+    subtitle: 'Use Code: NEW50',
+    type: 'OFFER',
+    colors: ['#00b09b', '#96c93d'], // Teal to Lime
+    image: 'https://cdn-icons-png.flaticon.com/512/3724/3724720.png',
   },
   {
     id: 2,
-    image: 'https://img.freepik.com/free-vector/flat-grocery-delivery-social-media-promo-template_23-2149102434.jpg',
-    type: 'Sponsored',
+    title1: 'FRESH FRUITS',
+    title2: '& VEGETABLES',
+    subtitle: 'Everything at up to 50% OFF',
+    type: 'DEALS',
+    colors: ['#f85032', '#e73827'], // Reddish
+    image: 'https://cdn-icons-png.flaticon.com/512/2329/2329865.png',
   },
   {
     id: 3,
-    image: 'https://img.freepik.com/free-psd/grocery-store-flyer-template_23-2148694033.jpg',
-    type: 'Festival',
-  },
-  {
-    id: 4,
-    image: 'https://img.freepik.com/free-vector/flat-grocery-delivery-landing-page-template_23-2149026414.jpg',
-    type: 'Co-powered',
+    title1: 'DAIRY & EGGS',
+    title2: 'FARM FRESH PRODUCTS',
+    subtitle: 'Delivered in 10-15 mins',
+    type: 'ESSENTIALS',
+    colors: ['#4b6cb7', '#182848'], // Dark Blueish
+    image: 'https://cdn-icons-png.flaticon.com/512/2674/2674486.png',
   },
 ];
 
 const BannerCarousel = () => {
   const { theme } = useTheme();
+  const { getCartTotal } = useCart();
+  const cartTotal = getCartTotal();
+  
+  const FREE_DELIVERY_THRESHOLD = 599;
+  const remainingForFree = Math.max(0, FREE_DELIVERY_THRESHOLD - cartTotal);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      let nextIndex = (activeIndex + 1) % banners.length;
+      let nextIndex = (activeIndex + 1) % (BANNERS.length + (remainingForFree > 0 ? 1 : 0));
       scrollViewRef.current?.scrollTo({ x: nextIndex * width, animated: true });
       setActiveIndex(nextIndex);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(timer);
-  }, [activeIndex]);
+  }, [activeIndex, remainingForFree]);
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -65,25 +81,68 @@ const BannerCarousel = () => {
         snapToInterval={width}
         decelerationRate="fast"
       >
-        {banners.map((item, index) => (
+        {/* Static Banners */}
+        {BANNERS.map((item, index) => (
           <View key={item.id} style={styles.bannerWrapper}>
-            <View style={[styles.imageContainer, theme.shadows.medium]}>
+            <LinearGradient 
+              colors={item.colors} 
+              start={{ x: 0, y: 0 }} 
+              end={{ x: 1, y: 0 }} 
+              style={[styles.imageContainer, theme.shadows.medium]}
+            >
+              <View style={styles.bannerTextContent}>
+                <Text style={styles.typeLabel}>{item.type}</Text>
+                <Text style={styles.title1}>{item.title1}</Text>
+                <Text style={styles.title2}>{item.title2}</Text>
+                <Text style={styles.subtitle}>{item.subtitle}</Text>
+                
+                <TouchableOpacity activeOpacity={0.8} style={styles.ctaButton}>
+                  <Text style={[styles.ctaText, { color: item.colors[1] }]}>Shop Now</Text>
+                  <Icon name="arrow-right" size={14} color={item.colors[1]} />
+                </TouchableOpacity>
+              </View>
+              
               <Image 
-                source={{ uri: item.image || 'https://via.placeholder.com/400x200?text=Offer' }} 
-                style={styles.bannerImage} 
-                resizeMode="cover" 
+                source={{ uri: item.image }} 
+                style={styles.floatingImage} 
+                resizeMode="contain" 
               />
-              {item.type && (
-                <View style={[styles.typeBadge, { backgroundColor: 'rgba(0,0,0,0.5)' }]}>
-                  <Text style={styles.typeText}>{item.type}</Text>
-                </View>
-              )}
-            </View>
+            </LinearGradient>
           </View>
         ))}
+
+        {/* Dynamic Offer Banner (if threshold not met) */}
+        {remainingForFree > 0 && (
+          <View style={styles.bannerWrapper}>
+            <LinearGradient 
+              colors={['#8E2DE2', '#4A00E0']} 
+              start={{ x: 0, y: 0 }} 
+              end={{ x: 1, y: 0 }} 
+              style={[styles.imageContainer, theme.shadows.medium]}
+            >
+              <View style={styles.bannerTextContent}>
+                <Text style={styles.typeLabel}>UNLOCKED OFFER</Text>
+                <Text style={styles.title1}>FREE DELIVERY</Text>
+                <Text style={styles.title2}>WAITING FOR YOU!</Text>
+                <Text style={styles.subtitle}>Shop for ₹{remainingForFree} more to unlock</Text>
+                
+                <View style={styles.ctaButtonLighter}>
+                  <Text style={styles.ctaTextLight}>Keep Shopping</Text>
+                </View>
+              </View>
+              
+              <Image 
+                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/411/411712.png' }} 
+                style={styles.floatingImage} 
+                resizeMode="contain" 
+              />
+            </LinearGradient>
+          </View>
+        )}
       </ScrollView>
+      
       <View style={styles.pagination}>
-        {banners.map((_, index) => {
+        {[...BANNERS, ...(remainingForFree > 0 ? [1] : [])].map((_, index) => {
           const indicatorWidth = scrollX.interpolate({
             inputRange: [
               (index - 1) * width,
@@ -133,34 +192,84 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: width * 0.45,
+    height: width * 0.4,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#eee',
+    flexDirection: 'row',
+    padding: 16,
   },
-  bannerImage: {
-    width: '100%',
-    height: '100%',
+  bannerTextContent: {
+    flex: 1,
+    justifyContent: 'center',
+    zIndex: 2,
   },
-  typeBadge: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  typeText: {
-    color: '#fff',
+  typeLabel: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '900',
+    color: 'rgba(255,255,255,0.8)',
     textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
+  title1: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#fff',
+    lineHeight: 24,
+  },
+  title2: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#fff',
+    opacity: 0.9,
+    marginBottom: 6,
+  },
+  subtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#fff',
+    opacity: 0.8,
+    marginBottom: 12,
+  },
+  ctaButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  ctaButtonLighter: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  ctaText: {
+    fontSize: 10,
+    fontWeight: '900',
+    marginRight: 4,
+  },
+  ctaTextLight: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#fff',
+  },
+  floatingImage: {
+    position: 'absolute',
+    right: -10,
+    bottom: -10,
+    width: 140,
+    height: 140,
+    opacity: 0.9,
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     position: 'absolute',
-    bottom: 12,
+    bottom: 20,
     left: 0,
     right: 0,
   },

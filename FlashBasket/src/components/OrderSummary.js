@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { useTheme } from '../constants/ThemeContext';
+import APP_CONFIG from '../config';
 
 const OrderSummary = ({ items = [], subtotal, discount, deliveryCharge, total }) => {
   const { theme } = useTheme();
@@ -15,7 +16,7 @@ const OrderSummary = ({ items = [], subtotal, discount, deliveryCharge, total })
           <View key={index} style={styles.itemRow}>
             <View style={styles.itemLeft}>
               <View style={[styles.imageContainer, { backgroundColor: theme.colors.surface }]}>
-                <Image source={{ uri: item.image }} style={styles.image} />
+                <Image source={{ uri: (item.image && item.image.trim() !== '') ? item.image : APP_CONFIG.DEFAULT_PLACEHOLDER }} style={styles.image} />
               </View>
               <View style={styles.itemInfo}>
                 <Text style={[styles.itemName, { color: theme.colors.text }]} numberOfLines={1}>

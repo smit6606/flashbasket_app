@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, Image, Alert, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Image, Alert, ActivityIndicator, RefreshControl, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import AppHeader from '../components/AppHeader';
@@ -16,6 +17,7 @@ import { useCart } from '../redux/CartContext';
 import { useAuth } from '../redux/AuthContext';
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
+import orderService from '../services/orderService';
 import AddressModal from '../components/AddressModal';
 
 const { width } = Dimensions.get('window');
@@ -28,9 +30,17 @@ const HomeScreen = ({ navigation }) => {
   const { addresses, selectedAddress, setSelectedAddress, deleteAddress } = useUser();
   const [categories, setCategories] = useState([]);
   const [sections, setSections] = useState([]);
+  const [buyAgainProducts, setBuyAgainProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  useFocusEffect(
+    useCallback(() => {
+      setSelectedCategory("all");
+    }, [])
+  );
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -58,6 +68,18 @@ const HomeScreen = ({ navigation }) => {
       finalSections.push(...dynamicSections);
 
       setSections(finalSections);
+
+      // Fetch Buy Again if user is logged in
+      if (user) {
+        try {
+          const buyAgainRes = await orderService.getBuyAgainProducts();
+          setBuyAgainProducts(buyAgainRes.data || []);
+        } catch (err) {
+          console.error('Error fetching buy again:', err);
+        }
+      } else {
+        setBuyAgainProducts([]);
+      }
     } catch (error) {
       console.error('Error fetching home data:', error);
     } finally {
@@ -87,6 +109,7 @@ const HomeScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
       <AppHeader onLocationPress={() => setShowAddressModal(true)} />
       
       {loading && !refreshing ? (
@@ -104,21 +127,37 @@ const HomeScreen = ({ navigation }) => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
             }
           >
-            {/* Search Bar directs to Categories Search */}
-            <View style={styles.searchContainer}>
-              <SearchBar onPress={() => navigation.navigate('Categories')} />
+            {/* Search Bar directs to Global Search */}
+            <View style={[styles.searchContainer, { backgroundColor: theme.colors.background }]}>
+              <SearchBar onPress={() => navigation.navigate('SearchScreen')} />
             </View>
 
             {/* Quick Category Grid */}
             <View style={styles.categoryHeader}>
               <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Shop by Category</Text>
             </View>
-            <CategoryFilterRow onCategorySelect={(catId) => {
-              if (catId) navigation.navigate('Categories', { categoryId: catId });
-            }} />
+            <CategoryFilterRow 
+              activeCategory={selectedCategory}
+              onCategorySelect={(catId) => {
+                if (catId) {
+                  setSelectedCategory(catId);
+                  navigation.navigate('Categories', { categoryId: catId });
+                }
+              }} 
+            />
 
             {/* Banners */}
             <BannerCarousel />
+
+            {/* Buy Again Section */}
+            {buyAgainProducts.length > 0 && (
+              <ProductSection 
+                title="Buy Again" 
+                data={buyAgainProducts.slice(0, 8)} 
+                onViewAll={() => navigation.navigate('BuyAgainScreen')} 
+                isBuyAgain={true}
+              />
+            )}
 
             {/* Dynamic Sections */}
             {sections.length > 0 ? (
@@ -189,7 +228,6 @@ const styles = StyleSheet.create({
   loadingText: { marginTop: 12, fontSize: 14, fontWeight: '700', letterSpacing: 1 },
   searchContainer: {
     paddingTop: 8,
-    backgroundColor: '#fff', // Or theme based
   },
   categoryHeader: {
     paddingHorizontal: 16,

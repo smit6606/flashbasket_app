@@ -14,7 +14,7 @@ const placeholders = [
 ];
 
 const SearchBar = ({ onPress }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -60,7 +60,7 @@ const SearchBar = ({ onPress }) => {
     <TouchableOpacity style={styles.container} activeOpacity={0.8} onPress={onPress}>
       <View style={[styles.searchBox, { 
         backgroundColor: theme.colors.surface, 
-        borderColor: theme.colors.border,
+        borderColor: isDark ? theme.colors.border : '#E2E8F0',
         ...theme.shadows.soft 
       }]}>
         <Icon name="search-outline" size={20} color={theme.colors.primary} style={styles.icon} />
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 16,
     paddingHorizontal: 16,
-    height: 54,
+    height: 50,
     borderWidth: 1,
   },
   icon: {
@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
     width: 1,
     height: 24,
     backgroundColor: '#E2E8F0',
-    marginHorizontal: 10,
+    marginHorizontal: 12,
+    opacity: 0.5,
   },
   micIcon: {
     marginLeft: 4,

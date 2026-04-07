@@ -54,7 +54,7 @@ export const ThemeProvider = ({ children }) => {
     };
   }, [isDark]);
 
-  if (loading) return null; // Prevent flickering on boot
+  // if (loading) return null; // Removed to prevent permanent black screen if storage hangs. Theme will default and then update.
 
   return (
     <ThemeContext.Provider value={value}>

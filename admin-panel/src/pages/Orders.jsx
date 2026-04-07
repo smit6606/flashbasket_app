@@ -344,25 +344,46 @@ export default function Orders() {
         }}
       >
         <Typography variant="caption" sx={{ px: 2, py: 1, display: 'block', fontWeight: 900, color: 'text.disabled', textTransform: 'uppercase' }}>
-          Transition Selection
+          Available Next Steps
         </Typography>
-        {statusOptions.map((option) => (
-          <MenuItem 
-            key={option.value} 
-            onClick={() => handleUpdateStatus(option.value)}
-            disabled={selectedOrder?.status === option.value}
-            sx={{ 
-              borderRadius: '10px', 
-              py: 1.5,
-              fontWeight: 700,
-              fontSize: '0.85rem',
-              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.05), color: 'primary.main' }
-            }}
-          >
-            <MuiListItemIcon sx={{ color: 'inherit' }}>{option.icon}</MuiListItemIcon>
-            {option.label}
-          </MenuItem>
-        ))}
+        {statusOptions
+          .filter(option => {
+            const statusOrder = ['Pending', 'Packed', 'Out for Delivery', 'Delivered'];
+            const currentIndex = statusOrder.indexOf(selectedOrder?.status);
+            const nextIndex = statusOrder.indexOf(option.value);
+            
+            // Show Cancelled always, otherwise only show the immediate next status
+            if (option.value === 'Cancelled' && selectedOrder?.status !== 'Delivered' && selectedOrder?.status !== 'Cancelled') return true;
+            return nextIndex === currentIndex + 1;
+          })
+          .map((option) => (
+            <MenuItem 
+              key={option.value} 
+              onClick={() => handleUpdateStatus(option.value)}
+              sx={{ 
+                borderRadius: '10px', 
+                py: 1.5,
+                fontWeight: 700,
+                fontSize: '0.85rem',
+                '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.05), color: 'primary.main' }
+              }}
+            >
+              <MuiListItemIcon sx={{ color: 'inherit' }}>{option.icon}</MuiListItemIcon>
+              {option.label}
+            </MenuItem>
+          ))
+        }
+        {(!selectedOrder || statusOptions.filter(option => {
+            const statusOrder = ['Pending', 'Packed', 'Out for Delivery', 'Delivered'];
+            const currentIndex = statusOrder.indexOf(selectedOrder?.status);
+            const nextIndex = statusOrder.indexOf(option.value);
+            if (option.value === 'Cancelled' && selectedOrder?.status !== 'Delivered' && selectedOrder?.status !== 'Cancelled') return true;
+            return nextIndex === currentIndex + 1;
+          }).length === 0) && (
+          <Typography variant="body2" sx={{ px: 2, py: 1.5, color: 'text.secondary', fontStyle: 'italic' }}>
+            No transitions available.
+          </Typography>
+        )}
       </Menu>
     </PageWrapper>
   );

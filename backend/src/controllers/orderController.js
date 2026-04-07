@@ -21,6 +21,15 @@ class OrderController {
     }
   }
 
+  async getBuyAgain(req, res) {
+    try {
+      const result = await orderService.getBuyAgainProducts(req.user.id);
+      return responseHandler.success(res, 'Buy again products fetched', result);
+    } catch (error) {
+      return responseHandler.error(res, error.message || messages.COMMON.SOMETHING_WENT_WRONG);
+    }
+  }
+
   async getOrderById(req, res) {
     try {
       const { id } = req.params;

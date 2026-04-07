@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -14,7 +14,7 @@ import categoryService from '../services/categoryService';
 import { useCart } from '../redux/CartContext';
 
 const CategoriesScreen = ({ route, navigation }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { getCartCount, getCartTotal } = useCart();
   const initialCategoryId = route?.params?.categoryId;
 
@@ -40,10 +40,12 @@ const CategoriesScreen = ({ route, navigation }) => {
 
   // Sync active category when navigating with params
   useEffect(() => {
-    if (initialCategoryId) {
-      setActiveCategoryId(initialCategoryId);
+    if (route?.params?.categoryId) {
+      setActiveCategoryId(route.params.categoryId);
+      // Clear params so they don't persist if navigated to via bottom tab later
+      navigation.setParams({ categoryId: undefined, categoryName: undefined });
     }
-  }, [initialCategoryId]);
+  }, [route?.params?.categoryId, navigation]);
 
   useEffect(() => {
     if (activeCategoryId) {
@@ -55,13 +57,14 @@ const CategoriesScreen = ({ route, navigation }) => {
     try {
       const response = await categoryService.getAllCategories();
       const catList = response.data || [];
-      setCategories(catList);
+      const finalCats = [{ id: 'all', name: 'All', image: 'https://cdn-icons-png.flaticon.com/512/3081/3081986.png' }, ...catList];
+      setCategories(finalCats);
       
-      // Priority: route param > previously active > first category
+      // Priority: route param > previously active > 'all'
       if (initialCategoryId) {
         setActiveCategoryId(initialCategoryId);
-      } else if (!activeCategoryId && catList.length > 0) {
-        setActiveCategoryId(catList[0].id);
+      } else if (!activeCategoryId && finalCats.length > 0) {
+        setActiveCategoryId('all');
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -73,9 +76,14 @@ const CategoriesScreen = ({ route, navigation }) => {
   const fetchProducts = async (catId) => {
     setProductsLoading(true);
     try {
-      const response = await productService.getProductsByCategory(catId);
-      // Correct mapping based on standardized API response { success, message, data: { data: [...] } }
-      setProducts(response.data?.data || []);
+      let response;
+      if (catId === 'all') {
+        response = await productService.getAllProducts({ limit: 100 });
+      } else {
+        response = await productService.getProductsByCategory(catId);
+      }
+      
+      setProducts(response.data?.data || response.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
@@ -110,10 +118,15 @@ const CategoriesScreen = ({ route, navigation }) => {
       result = result.filter(p => (p.discount || 0) >= filters.discount);
     }
 
+    if (filters.categories.length > 0) {
+      result = result.filter(p => filters.categories.includes(p.subcategory) || filters.categories.includes(p.type));
+    }
+
     // Sort
     if (currentSort === 'low-high') result.sort((a, b) => a.price - b.price);
     else if (currentSort === 'high-low') result.sort((a, b) => b.price - a.price);
     else if (currentSort === 'discount') result.sort((a, b) => (b.discount || 0) - (a.discount || 0));
+    else if (currentSort === 'popular') result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
 
     return result;
   }, [products, searchQuery, filters, currentSort]);
@@ -129,9 +142,10 @@ const CategoriesScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
       {/* Top Search Area - Zepto Style */}
-      <View style={[styles.topBar, { backgroundColor: theme.colors.white, borderBottomColor: theme.colors.border }]}>
-        <View style={[styles.searchContainer, { backgroundColor: theme.colors.surface }]}>
+      <View style={[styles.topBar, { backgroundColor: theme.colors.surface, borderBottomColor: theme.colors.border }]}>
+        <View style={[styles.searchContainer, { backgroundColor: theme.colors.background, borderColor: theme.colors.border }]}>
           <Icon name="search-outline" size={20} color={theme.colors.textSecondary} />
           <TextInput
             placeholder={`Search for products in ${activeCategoryName}...`}
@@ -157,7 +171,7 @@ const CategoriesScreen = ({ route, navigation }) => {
               onCategoryChange={setActiveCategoryId}
             />
     
-            <View style={[styles.mainContent, { backgroundColor: theme.colors.white }]}>
+            <View style={[styles.mainContent, { backgroundColor: theme.colors.background }]}>
               {/* Category Sub-Header */}
               <View style={[styles.categoryHeader, { borderBottomColor: theme.colors.border }]}>
                 <Text style={[styles.categoryTitle, { color: theme.colors.text }]}>{activeCategoryName}</Text>
@@ -167,7 +181,7 @@ const CategoriesScreen = ({ route, navigation }) => {
               </View>
 
               {/* Advanced Filter Row */}
-              <View style={[styles.filterSortRow, { borderBottomColor: theme.colors.border }]}>
+              <View style={[styles.filterSortRow, { borderBottomColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => setFilterVisible(true)}>
                   <View style={styles.iconBadgeWrapper}>
                     <Icon name="options-outline" size={18} color={theme.colors.primary} />
@@ -179,7 +193,7 @@ const CategoriesScreen = ({ route, navigation }) => {
                   </View>
                   <Text style={[styles.actionText, { color: theme.colors.text }]}>Filters</Text>
                 </TouchableOpacity>
-                <View style={[styles.divider, { backgroundColor: theme.colors.border }]} />
+                <View style={[styles.filterDivider, { backgroundColor: theme.colors.border }]} />
                 <TouchableOpacity style={styles.actionBtn} onPress={() => setSortVisible(true)}>
                   <Icon name="swap-vertical-outline" size={18} color={theme.colors.primary} />
                   <Text style={[styles.actionText, { color: theme.colors.text }]}>Sort</Text>
@@ -224,15 +238,15 @@ const CategoriesScreen = ({ route, navigation }) => {
             </View>
           </>
         )}
-      </View>
+        </View>
 
-      <DynamicCartBar 
-        visible={getCartCount() > 0} 
-        cartCount={getCartCount()} 
-        cartTotal={getCartTotal()} 
-        onCartPress={() => navigation.navigate('CartScreen')} 
-      />
-    </View>
+        <DynamicCartBar 
+          visible={getCartCount() > 0} 
+          cartCount={getCartCount()} 
+          cartTotal={getCartTotal()} 
+          onCartPress={() => navigation.navigate('CartScreen')} 
+        />
+      </View>
 
       <FilterModal visible={filterVisible} onClose={() => setFilterVisible(false)} filters={filters} onApply={setFilters} />
       <SortModal visible={sortVisible} onClose={() => setSortVisible(false)} currentSort={currentSort} onSortSelect={(val) => { setCurrentSort(val); setSortVisible(false); }} />
@@ -255,28 +269,16 @@ const styles = StyleSheet.create({
     height: 48, 
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
   },
   searchInput: { flex: 1, marginLeft: 10, fontSize: 14, fontWeight: '600' },
   content: { flex: 1, flexDirection: 'row' },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   mainContent: { flex: 1 },
-  categoryHeader: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'baseline',
-  },
-  categoryTitle: { fontSize: 18, fontWeight: '900', letterSpacing: -0.5 },
-  productCount: { fontSize: 12, fontWeight: '700' },
   filterSortRow: { 
     flexDirection: 'row', 
     alignItems: 'center', 
     paddingVertical: 12, 
     borderBottomWidth: 1,
-    backgroundColor: '#fafafa',
   },
   actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   iconBadgeWrapper: { position: 'relative' },
@@ -294,14 +296,35 @@ const styles = StyleSheet.create({
   },
   badgeText: { color: '#fff', fontSize: 8, fontWeight: '900' },
   actionText: { fontSize: 13, fontWeight: '700', marginLeft: 8 },
-  divider: { width: 1, height: 20 },
-  listContainer: { paddingVertical: 12, paddingHorizontal: 8, paddingBottom: 120 },
+  filterDivider: { width: 1, height: 24, opacity: 0.5 },
+  listContainer: { paddingVertical: 8, paddingHorizontal: 8, paddingBottom: 150 },
   columnWrapper: { justifyContent: 'space-between' },
   productWrapper: { width: '49%', marginBottom: 6 },
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100, paddingHorizontal: 40 },
   emptyText: { fontSize: 17, fontWeight: '800', marginTop: 16, textAlign: 'center' },
   emptySubtitle: { fontSize: 13, textAlign: 'center', marginTop: 6, lineHeight: 18 },
 
+  categoryHeader: {
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryTitle: { 
+    fontSize: 16, 
+    fontWeight: '900', 
+    letterSpacing: -0.5,
+    textTransform: 'uppercase',
+  },
+  productCount: { 
+    fontSize: 11, 
+    fontWeight: '700',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
 });
 
 export default CategoriesScreen;

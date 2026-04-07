@@ -13,12 +13,20 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'X-Tunnel-Skip-Anti-Phishing-Page': 'true', // Required to bypass Dev Tunnel splash page
   },
 });
 
 // Request Interceptor: Attach JWT Token
 api.interceptors.request.use(
   async (config) => {
+    // Robust baseURL handling: 
+    // If baseURL is set and url starts with '/', axios drops the baseURL prefix.
+    // We strip the leading slash to ensure they combine correctly.
+    if (config.url && config.url.startsWith('/') && config.baseURL) {
+      config.url = config.url.substring(1);
+    }
+
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
