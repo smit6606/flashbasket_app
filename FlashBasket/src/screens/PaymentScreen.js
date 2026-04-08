@@ -20,6 +20,8 @@ import paymentService from '../services/paymentService';
 import QRCode from 'react-native-qrcode-svg';
 import { useStripe } from '@stripe/stripe-react-native';
 
+import NavHeader from '../components/NavHeader';
+
 const PaymentScreen = ({ navigation, route }) => {
   const { orderSummary = {}, couponCode } = route.params || {};
   const { theme, isDark } = useTheme();
@@ -53,18 +55,18 @@ const PaymentScreen = ({ navigation, route }) => {
       const method = isFullyPaidByWallet ? 'wallet' : (isInstant ? 'cod' : selectedMethod);
 
       if (method === 'online') {
-        // Step 1: Create Payment Intent on Backend
-        const response = await paymentService.createPaymentIntent(finalAmount);
+        const response = await paymentService.createPaymentIntent({ 
+          couponCode, 
+          useWallet: walletDeduction > 0 
+        });
         
         if (!response || !response.data || !response.data.clientSecret) {
           throw new Error('Failed to initiate payment. Please try again.');
         }
 
         const { clientSecret } = response.data;
-        // Extract payment intent ID from client secret (pi_xxx_secret_yyy -> pi_xxx)
         stripePaymentIntentId = clientSecret.split('_secret')[0];
 
-        // Step 2: Initialize Payment Sheet
         const { error: initError } = await initPaymentSheet({
           paymentIntentClientSecret: clientSecret,
           merchantDisplayName: 'FlashBasket',
@@ -79,7 +81,6 @@ const PaymentScreen = ({ navigation, route }) => {
           throw new Error(initError.message);
         }
 
-        // Step 3: Present Payment Sheet
         const { error: presentError } = await presentPaymentSheet();
 
         if (presentError) {
@@ -95,10 +96,7 @@ const PaymentScreen = ({ navigation, route }) => {
         paymentMethod: method === 'online' ? 'online' : method,
         couponCode: couponCode || null,
         useWallet: walletDeduction > 0,
-        orderSummary: {
-          ...orderSummary,
-          stripePaymentIntentId: method === 'online' ? stripePaymentIntentId : null,
-        }
+        stripePaymentIntentId: method === 'online' ? stripePaymentIntentId : null,
       };
 
       const response = await orderService.createOrder(orderData);
@@ -112,8 +110,6 @@ const PaymentScreen = ({ navigation, route }) => {
         });
       }
     } catch (error) {
-      console.log('Payment Error:', error);
-      
       if (error.message === 'CANCELLED') {
         Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
       } else {
@@ -152,18 +148,8 @@ const PaymentScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
-      
-      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()}
-          style={[styles.backButton, { backgroundColor: theme.colors.surface }]}
-        >
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Payment</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <NavHeader title="Payment" />
+
 
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Delivery Address */}
@@ -311,23 +297,6 @@ const PaymentScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    justifyContent: 'space-between',
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  headerTitle: { fontSize: 18, fontWeight: '800' },
   scrollContainer: { padding: 16 },
   section: { marginBottom: 24 },
   sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },

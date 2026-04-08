@@ -21,10 +21,13 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loadStoredData = async () => {
+    console.log('[Auth] Loading stored session...');
     try {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
       
+      console.log('[Auth] Storage retrieved:', { hasToken: !!storedToken, hasUser: !!storedUser });
+
       if (storedToken) {
         setToken(storedToken);
       }
@@ -32,11 +35,13 @@ export const AuthProvider = ({ children }) => {
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {
-      console.error('Error loading auth data from storage:', error);
+      console.error('[Auth] Error loading auth data from storage:', error);
     } finally {
+      console.log('[Auth] Loading state set to false');
       setLoading(false);
     }
   };
+
 
   const loginWithOtp = async (phone, otp) => {
     try {

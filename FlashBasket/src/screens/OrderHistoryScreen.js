@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
@@ -8,6 +8,8 @@ import orderService from '../services/orderService';
 import Animated, { FadeInUp, Layout } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
+
+import NavHeader from '../components/NavHeader';
 
 const OrderHistoryScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
@@ -47,7 +49,7 @@ const OrderHistoryScreen = ({ navigation }) => {
     return orders;
   }, [orders, activeTab]);
 
-  const renderOrder = ({ item, index }) => (
+  const renderOrder = useCallback(({ item, index }) => (
     <Animated.View entering={FadeInUp.delay(index * 100).duration(400)}>
       <OrderCard 
         order={{
@@ -65,33 +67,23 @@ const OrderHistoryScreen = ({ navigation }) => {
         onPress={() => navigation.navigate('OrderDetailsScreen', { orderId: item.id })} 
       />
     </Animated.View>
-  );
+  ), [navigation]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => navigation.goBack()} 
-          style={[styles.backButton, { backgroundColor: isDark ? theme.colors.surface : '#F3F4F6' }]}
-        >
-          <Icon name="arrow-back" size={20} color={theme.colors.text} />
-        </TouchableOpacity>
-        <View style={styles.headerTitleContainer}>
-          <Text style={[styles.headerTitle, { color: theme.colors.text }]}>My Orders</Text>
-          <Text style={[styles.headerSubtitle, { color: theme.colors.textSecondary }]}>
-            {orders.length} orders placed so far
-          </Text>
-        </View>
-        <TouchableOpacity 
-          onPress={fetchOrders}
-          style={[styles.backButton, { backgroundColor: isDark ? theme.colors.surface : '#F3F4F6' }]}
-        >
-          <Icon name="search" size={20} color={theme.colors.text} />
-        </TouchableOpacity>
-      </View>
+      <NavHeader 
+        title="My Orders" 
+        subtitle={`${orders.length} orders placed so far`}
+        rightComponent={
+          <TouchableOpacity 
+            onPress={fetchOrders}
+            style={[styles.backButton, { backgroundColor: isDark ? theme.colors.surface : '#F3F4F6' }]}
+          >
+            <Icon name="search" size={20} color={theme.colors.text} />
+          </TouchableOpacity>
+        }
+      />
+
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
@@ -138,6 +130,10 @@ const OrderHistoryScreen = ({ navigation }) => {
           renderItem={renderOrder}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={6}
+          maxToRenderPerBatch={10}
+          windowSize={5}
+          removeClippedSubviews={true}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={[styles.emptyIconContainer, { backgroundColor: isDark ? theme.colors.surface : '#F3F4F6' }]}>
@@ -167,33 +163,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  headerTitleContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: -0.5,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 2,
   },
   tabsContainer: {
     flexDirection: 'row',

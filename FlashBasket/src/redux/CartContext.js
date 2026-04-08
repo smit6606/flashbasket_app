@@ -164,9 +164,15 @@ export const CartProvider = ({ children }) => {
         }
         await loadCart(false); // Reload to get real IDs and sync state
       } catch (err) {
-        console.error('Background cart sync failed', err);
-        // If it's a 401, AuthContext will handle it via the global interceptor we'll add
-        // But we still want to reload to revert optimistic UI if needed
+        // Only log as error if it's a server error (status >= 500)
+        // Otherwise use warn for network (0) or client errors (4xx) to keep console clean
+        if (err.status >= 500) {
+          console.error('[Cart Sync] Server failure:', err.message);
+        } else {
+          console.warn('[Cart Sync] Background sync failed:', err.message);
+        }
+        
+        // We still reload to ensure UI is in sync with whatever is on server
         loadCart(false);
       }
     }

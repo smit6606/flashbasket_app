@@ -7,6 +7,8 @@ import { useUser } from '../redux/UserContext';
 import AddressCard from '../components/AddressCard';
 import { ActivityIndicator } from 'react-native';
 
+import NavHeader from '../components/NavHeader';
+
 const AddressScreen = ({ navigation }) => {
     const { theme } = useTheme();
     const { addresses, setSelectedAddress, deleteAddress, addressLoading: loading } = useUser();
@@ -38,12 +40,8 @@ const AddressScreen = ({ navigation }) => {
 
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Icon name="arrow-left" size={24} color={theme.colors.text} />
-                </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Manage Addresses</Text>
-            </View>
+            <NavHeader title="Manage Addresses" />
+
 
             {loading ? (
                 <View style={[styles.emptyContainer, { flex: 1 }]}>
@@ -88,21 +86,6 @@ const AddressScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
-    },
-    backButton: {
-        padding: 4,
-        marginRight: 12,
-    },
-    headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
     },
     listContent: {
         padding: 16,

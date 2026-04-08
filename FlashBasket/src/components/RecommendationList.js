@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { useTheme } from '../constants/ThemeContext';
 import APP_CONFIG from '../config';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,7 +10,14 @@ const RecommendationItem = ({ item, onAdd }) => {
 
   return (
     <View style={[styles.card, { backgroundColor: theme.colors.background, borderColor: theme.colors.border }]}>
-      <Image source={{ uri: (item.image && item.image.trim() !== '') ? item.image : APP_CONFIG.DEFAULT_PLACEHOLDER }} style={styles.image} />
+      <FastImage 
+        source={{ 
+          uri: (item.image && item.image.trim() !== '') ? item.image : APP_CONFIG.DEFAULT_PLACEHOLDER,
+          priority: FastImage.priority.normal
+        }} 
+        style={styles.image} 
+        resizeMode={FastImage.resizeMode.contain}
+      />
       <Text style={[styles.name, { color: theme.colors.text }]} numberOfLines={2}>
         {item.name}
       </Text>

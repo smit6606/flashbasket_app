@@ -26,6 +26,9 @@ const CartScreenSnapshot = ({ theme }) => {
   );
 };
 
+import { calculateOrderSummary } from '../utils/priceUtils';
+import NavHeader from '../components/NavHeader';
+
 const CartScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
   const { cart, loading, updateQuantity, removeFromCart, getCartTotal } = useCart();
@@ -37,24 +40,13 @@ const CartScreen = ({ navigation }) => {
 
   const cartItems = cart?.items || [];
   const subtotal = getCartTotal();
-  const discount = appliedOffer ? appliedOffer.discountAmount : 0; 
   
-  // SINGLE SOURCE OF TRUTH: Delivery Charging Logic
-  const deliveryFee = subtotal > 500 || subtotal === 0 ? 0 : 25;
-  const handlingFee = subtotal > 0 ? 5 : 0;
-  
-  const baseAmount = subtotal - discount + deliveryFee + handlingFee;
-  const walletUsed = useWalletBalance ? Math.min(wallet?.balance || 0, baseAmount) : 0;
-  const grandTotal = Math.max(0, baseAmount - walletUsed);
-  
-  const orderSummary = {
-    itemsTotal: subtotal,
-    discount: discount,
-    deliveryFee: deliveryFee,
-    handlingFee: handlingFee,
-    walletUsed: walletUsed, 
-    grandTotal: grandTotal
-  };
+  const orderSummary = calculateOrderSummary({
+    subtotal,
+    discount: appliedOffer ? appliedOffer.discountAmount : 0,
+    walletBalance: wallet?.balance || 0,
+    useWallet: useWalletBalance
+  });
 
   const handleIncrease = (id) => {
     const item = cartItems.find(i => i.id === id);
@@ -116,16 +108,7 @@ const CartScreen = ({ navigation }) => {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
-      
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Checkout</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <NavHeader title="Checkout" />
 
       {loading ? (
         <CartScreenSnapshot theme={theme} />
@@ -141,6 +124,7 @@ const CartScreen = ({ navigation }) => {
             <Text style={styles.shopNowText}>Shop Now</Text>
           </TouchableOpacity>
         </Animated.View>
+
       ) : (
         <>
           <ScrollView 
@@ -151,7 +135,7 @@ const CartScreen = ({ navigation }) => {
             <Animated.View entering={FadeIn.duration(800)} style={[styles.savingsBanner, { backgroundColor: '#E1F8F0' }]}>
               <Icon name="sparkles" size={16} color="#10B981" />
               <Text style={styles.savingsBannerText}>
-                Yay! You saved <Text style={{ fontWeight: '800' }}>₹{discount + (subtotal > 500 ? 25 : 0)}</Text> on this order
+                Yay! You saved <Text style={{ fontWeight: '800' }}>₹{orderSummary.discount + (subtotal > 500 ? 25 : 0)}</Text> on this order
               </Text>
             </Animated.View>
 
@@ -240,7 +224,7 @@ const CartScreen = ({ navigation }) => {
                           <Icon name="wallet" size={20} color={theme.colors.primary} />
                        </View>
                        <View>
-                          <Text style={[styles.walletLabel, { color: theme.colors.text }]}>Use ₹{walletUsed} from wallet</Text>
+                          <Text style={[styles.walletLabel, { color: theme.colors.text }]}>Use ₹{orderSummary.walletUsed} from wallet</Text>
                           <Text style={[styles.walletSubLabel, { color: theme.colors.textSecondary }]}>You have ₹{wallet.balance} in your wallet</Text>
                        </View>
                     </View>
@@ -293,27 +277,6 @@ const CartScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 8,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
   },
   scrollContent: {
     paddingTop: 12,

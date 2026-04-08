@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Pressable, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Pressable, Dimensions } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import { useTheme } from '../constants/ThemeContext';
 import { useFavorites } from '../constants/FavoritesContext';
 import { useCart } from '../redux/CartContext';
@@ -79,10 +80,13 @@ const ProductCard = ({ product, width, style, variant = 'previous', showBuyAgain
       >
         <Pressable onPress={() => navigation.navigate('ProductDetails', { product })}>
           <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: (product.image && product.image.trim() !== '') ? product.image : 'https://via.placeholder.com/150?text=Product' }}
+            <FastImage
+              source={{ 
+                uri: (product.image && product.image.trim() !== '') ? product.image : 'https://via.placeholder.com/150?text=Product',
+                priority: FastImage.priority.normal,
+              }}
               style={styles.image}
-              resizeMode="contain"
+              resizeMode={FastImage.resizeMode.contain}
             />
             {product.discount > 0 && (
               <View style={[styles.discountTag, { backgroundColor: theme.colors.primary }]}>
@@ -173,10 +177,13 @@ const ProductCard = ({ product, width, style, variant = 'previous', showBuyAgain
 
         {/* Image Container */}
         <View style={styles.modernImageContainer}>
-          <Image
-            source={{ uri: (product.image && product.image.trim() !== '') ? product.image : 'https://via.placeholder.com/150?text=Product' }}
+          <FastImage
+            source={{ 
+              uri: (product.image && product.image.trim() !== '') ? product.image : 'https://via.placeholder.com/150?text=Product',
+              priority: FastImage.priority.normal,
+            }}
             style={styles.modernImage}
-            resizeMode="contain"
+            resizeMode={FastImage.resizeMode.contain}
           />
         </View>
 

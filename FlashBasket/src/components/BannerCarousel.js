@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, ScrollView, Image, StyleSheet, Dimensions, Animated, Text, TouchableOpacity } from 'react-native';
+import { View, ScrollView, StyleSheet, Dimensions, Animated, Text, TouchableOpacity } from 'react-native';
+import FastImage from 'react-native-fast-image';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import LinearGradient from 'react-native-linear-gradient';
 import { useTheme } from '../constants/ThemeContext';
@@ -102,10 +103,10 @@ const BannerCarousel = () => {
                 </TouchableOpacity>
               </View>
               
-              <Image 
-                source={{ uri: item.image }} 
+              <FastImage 
+                source={{ uri: item.image, priority: FastImage.priority.high }} 
                 style={styles.floatingImage} 
-                resizeMode="contain" 
+                resizeMode={FastImage.resizeMode.contain} 
               />
             </LinearGradient>
           </View>
@@ -131,10 +132,10 @@ const BannerCarousel = () => {
                 </View>
               </View>
               
-              <Image 
-                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/411/411712.png' }} 
+              <FastImage 
+                source={{ uri: 'https://cdn-icons-png.flaticon.com/512/411/411712.png', priority: FastImage.priority.normal }} 
                 style={styles.floatingImage} 
-                resizeMode="contain" 
+                resizeMode={FastImage.resizeMode.contain} 
               />
             </LinearGradient>
           </View>

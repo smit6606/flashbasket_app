@@ -2,16 +2,21 @@ const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const responseHandler = require('../utils/responseHandler');
 
+const orderService = require('../services/orderService');
+
 exports.createPaymentIntent = async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { couponCode, useWallet } = req.body;
+    const userId = req.user.id;
 
-    if (!amount) {
-      return responseHandler.error(res, 'Amount is required', 400);
+    const amount = await orderService.calculateRequiredPayment(userId, { couponCode, useWallet });
+
+    if (amount <= 0) {
+      return responseHandler.error(res, 'Invalid amount for payment intent', 400);
     }
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // in paise (smallest currency unit for INR)
+      amount: Math.round(amount * 100), // in INR smallest unit
       currency: 'inr',
       automatic_payment_methods: {
         enabled: true,

@@ -1,5 +1,5 @@
 # ninja log v5
-0	7	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
+1	7	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
 49737	59573	1775627593166957023	safeareacontext_autolinked_build/CMakeFiles/react_codegen_safeareacontext.dir/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-safe-area-context/android/build/generated/source/codegen/jni/react/renderer/components/safeareacontext/ComponentDescriptors.cpp.o	49ff33329fff268a
 112546	117152	1775627650766196122	rnworklets_autolinked_build/CMakeFiles/react_codegen_rnworklets.dir/rnworklets-generated.cpp.o	93a317b5f4a68d9e
 43759	47949	1775627581553084540	rnreanimated_autolinked_build/CMakeFiles/react_codegen_rnreanimated.dir/react/renderer/components/rnreanimated/EventEmitters.cpp.o	c425ba1b08d18521
@@ -32,7 +32,7 @@
 63248	75804	1775627609391454553	rnscreens_autolinked_build/CMakeFiles/react_codegen_rnscreens.dir/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-screens/common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNodeCommitHook.cpp.o	116f1af18637a693
 27039	42134	1775627575635696397	RNMapsSpecs_autolinked_build/CMakeFiles/react_codegen_RNMapsSpecs.dir/react/renderer/components/RNMapsSpecs/Props.cpp.o	e140bceef2a65748
 91775	100306	1775627633901426222	rnsvg_autolinked_build/CMakeFiles/react_codegen_rnsvg.dir/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-svg/common/cpp/react/renderer/components/rnsvg/RNSVGShadowNodes.cpp.o	b90e9043d5c32420
-7	235	1775637256347651442	build.ninja	b554d3bd63437f48
+11	428	1775652924226161812	build.ninja	b554d3bd63437f48
 15154	19828	1775627553416570947	rngesturehandler_codegen_autolinked_build/CMakeFiles/react_codegen_rngesturehandler_codegen.dir/react/renderer/components/rngesturehandler_codegen/EventEmitters.cpp.o	7c8a714939d0e38b
 106899	110147	1775627643767849868	RNVectorIconsSpec_autolinked_build/CMakeFiles/react_codegen_RNVectorIconsSpec.dir/react/renderer/components/RNVectorIconsSpec/States.cpp.o	59b65d1bd783766e
 14899	24563	1775627558161683297	rngesturehandler_codegen_autolinked_build/CMakeFiles/react_codegen_rngesturehandler_codegen.dir/react/renderer/components/rngesturehandler_codegen/ComponentDescriptors.cpp.o	e543f47dfc0074be
@@ -76,7 +76,7 @@
 75804	85316	1775627618902141539	rnscreens_autolinked_build/CMakeFiles/react_codegen_rnscreens.dir/rnscreens.cpp.o	fe328243ce5b3902
 110148	115855	1775627649464803325	rnworklets_autolinked_build/CMakeFiles/react_codegen_rnworklets.dir/react/renderer/components/rnworklets/Props.cpp.o	82e00144ad5b441e
 16944	27152	1775627560741595929	rngesturehandler_codegen_autolinked_build/CMakeFiles/react_codegen_rngesturehandler_codegen.dir/react/renderer/components/rngesturehandler_codegen/Props.cpp.o	53686a6bcd0e3fdf
-0	11	0	clean	9b23ba4e7ad698
+0	25	0	clean	9b23ba4e7ad698
 62264	72983	1775627606549750033	rnscreens_autolinked_build/CMakeFiles/react_codegen_rnscreens.dir/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-screens/common/cpp/react/renderer/components/rnscreens/RNSScreenShadowNode.cpp.o	a677be0bde899f75
 17865	27039	1775627560627595541	rngesturehandler_codegen_autolinked_build/CMakeFiles/react_codegen_rngesturehandler_codegen.dir/react/renderer/components/rngesturehandler_codegen/ShadowNodes.cpp.o	fc8a4c016d106795
 19	6413	1775635062082255107	rnstripe_autolinked_build/CMakeFiles/react_codegen_rnstripe.dir/react/renderer/components/rnstripe/EventEmitters.cpp.o	3d0b49a7c421f4f
@@ -102,7 +102,6 @@
 93983	105418	1775627638971502156	rnsvg_autolinked_build/CMakeFiles/react_codegen_rnsvg.dir/rnsvg.cpp.o	9d2fd9973730d02c
 17	5924	1775627539511909917	rnasyncstorage_autolinked_build/CMakeFiles/react_codegen_rnasyncstorage.dir/react/renderer/components/rnasyncstorage/ComponentDescriptors.cpp.o	cd62f4d8119c8b41
 107396	107588	1775627641200864275	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/build/intermediates/cxx/Debug/y315p5g3/obj/x86_64/libreact_codegen_rnsvg.so	6f6aae4ce9fa0cc7
-0	12	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
-1	7	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
-0	7	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
-1	11	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
+7	348	1775652924226161812	build.ninja	b554d3bd63437f48
+1	8	0	/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs	fb623a5accfdd7fc
+0	7	0	clean	9b23ba4e7ad698

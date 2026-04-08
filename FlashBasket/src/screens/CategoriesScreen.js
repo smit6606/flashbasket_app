@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
@@ -212,7 +212,7 @@ const CategoriesScreen = ({ route, navigation }) => {
                   showsVerticalScrollIndicator={false}
                   contentContainerStyle={styles.listContainer}
                   columnWrapperStyle={styles.columnWrapper}
-                  renderItem={({ item }) => (
+                  renderItem={useCallback(({ item }) => (
                     <View style={styles.productWrapper}>
                       <ProductCard 
                         product={item} 
@@ -221,7 +221,12 @@ const CategoriesScreen = ({ route, navigation }) => {
                         style={{ marginHorizontal: 0, marginBottom: 12 }} 
                       />
                     </View>
-                  )}
+                  ), [])}
+                  initialNumToRender={6}
+                  maxToRenderPerBatch={10}
+                  windowSize={5}
+                  removeClippedSubviews={true}
+
                   ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                       <Icon name="basket-outline" size={60} color={theme.colors.textTertiary} />

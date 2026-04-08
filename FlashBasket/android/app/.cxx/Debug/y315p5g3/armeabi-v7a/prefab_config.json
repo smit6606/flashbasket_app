@@ -3,9 +3,9 @@
   "prefabPath": "/home/dev-05/.gradle/caches/modules-2/files-2.1/com.google.prefab/cli/2.1.0/aa32fec809c44fa531f01dcfb739b5b3304d3050/cli-2.1.0-all.jar",
   "packages": [
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-worklets/android/build/intermediates/prefab_package/debug/prefab",
-    "/home/dev-05/.gradle/caches/9.0.0/transforms/df62f4a3c6818dc3cc09553936c6f2fd/transformed/react-android-0.84.1-debug/prefab",
+    "/home/dev-05/.gradle/caches/9.0.0/transforms/272f193055c9553ef5b359689ac63c61/transformed/jetified-react-android-0.84.1-debug/prefab",
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-reanimated/android/build/intermediates/prefab_package/debug/prefab",
-    "/home/dev-05/.gradle/caches/9.0.0/transforms/9d34929fdb65a145dc091d62c15d0d86/transformed/hermes-android-250829098.0.9-debug/prefab",
-    "/home/dev-05/.gradle/caches/9.0.0/transforms/6cb94eb4240b26bae55579cb79d8f81a/transformed/fbjni-0.7.0/prefab"
+    "/home/dev-05/.gradle/caches/9.0.0/transforms/a80e6232511059ebe3bfd77d830e40aa/transformed/jetified-hermes-android-250829098.0.9-debug/prefab",
+    "/home/dev-05/.gradle/caches/9.0.0/transforms/0b2d22fa1cd33e45e764a77b5da9b4b2/transformed/jetified-fbjni-0.7.0/prefab"
   ]
 }

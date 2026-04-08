@@ -1,7 +1,15 @@
 const { Order, OrderItem, Cart, CartItem, Product, Category, User, Address, Wallet, WalletTransaction, Coupon, sequelize } = require('../models');
 
+const { 
+  ORDER_STATUS, 
+  ORDER_STATUS_FLOW, 
+  PAYMENT_METHODS, 
+  WALLET_TRANSACTION_TYPES, 
+  WALLET_SOURCES 
+} = require('../utils/constants');
+
 class OrderService {
-  async createOrder(userId, { addressId, paymentMethod, couponCode, useWallet, orderSummary }) {
+  async createOrder(userId, { addressId, paymentMethod, couponCode, useWallet, stripePaymentIntentId }) {
     const t = await sequelize.transaction();
     try {
       const cart = await Cart.findOne({
@@ -11,43 +19,43 @@ class OrderService {
 
       if (!cart || cart.items.length === 0) throw new Error('Cart is empty');
 
-      // Backend calculation as fallback/validation
-      let b_subtotal = 0;
-      cart.items.forEach(item => {
-        b_subtotal += item.product.price * item.quantity;
-      });
-
-      let b_discount = 0;
+      // Backend calculation - SINGLE SOURCE OF TRUTH
+      const subtotal = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+      
+      let discount = 0;
       if (couponCode) {
         const coupon = await Coupon.findOne({ where: { code: couponCode, isActive: true } });
-        if (coupon && b_subtotal >= coupon.minOrderAmount) {
+        if (coupon && subtotal >= coupon.minOrderAmount) {
           if (coupon.discountType === 'percentage') {
-            b_discount = (b_subtotal * coupon.discountValue) / 100;
+            discount = Math.round((subtotal * coupon.discountValue) / 100);
           } else {
-            b_discount = coupon.discountValue;
+            discount = coupon.discountValue;
           }
         }
       }
 
-      // Single Source of Truth: Prioritize frontend orderSummary
-      const subtotal = orderSummary ? orderSummary.itemsTotal : b_subtotal;
-      const discount = orderSummary ? orderSummary.discount : b_discount;
-      // Combine deliveryFee and handlingFee for backend storage in deliveryCharge field
-      const deliveryCharge = orderSummary ? (orderSummary.deliveryFee + (orderSummary.handlingFee || 0)) : (subtotal > 500 || subtotal === 0 ? 5 : 30);
-      const totalAmountBeforeWallet = subtotal - discount + deliveryCharge;
+      // Exact match with frontend priceUtils.js
+      const DELIVERY_THRESHOLD = 500;
+      const DELIVERY_FEE = 25;
+      const HANDLING_FEE = 5;
 
+      const deliveryFee = (subtotal === 0 || subtotal > DELIVERY_THRESHOLD) ? 0 : DELIVERY_FEE;
+      const handlingFee = subtotal > 0 ? HANDLING_FEE : 0;
+      const deliveryCharge = deliveryFee + handlingFee;
+
+      const baseAmount = subtotal - discount + deliveryCharge;
+      
       let walletUsed = 0;
       let wallet = null;
 
-      if (useWallet || paymentMethod === 'wallet') {
-        // Use lock to prevent concurrent modifications during the transaction
+      if (useWallet || paymentMethod === PAYMENT_METHODS.WALLET) {
         wallet = await Wallet.findOne({ 
           where: { userId }, 
           transaction: t, 
           lock: t.LOCK.UPDATE 
         });
         if (wallet && wallet.balance > 0) {
-          walletUsed = Math.min(wallet.balance, totalAmountBeforeWallet);
+          walletUsed = Math.min(wallet.balance, baseAmount);
           
           if (walletUsed > 0) {
             wallet.balance -= walletUsed;
@@ -55,20 +63,18 @@ class OrderService {
 
             await WalletTransaction.create({
               userId,
-              type: 'debit',
+              type: WALLET_TRANSACTION_TYPES.DEBIT,
               amount: walletUsed,
-              source: 'checkout',
+              source: WALLET_SOURCES.CHECKOUT,
               description: `Wallet used for order`
             }, { transaction: t });
           }
         }
       }
 
-      // Final amount to be paid via chosen paymentMethod (COD/UPI)
-      // We calculate this based on the actual deduction made above
-      const totalAmount = Math.max(0, totalAmountBeforeWallet - walletUsed);
+      const totalAmount = Math.max(0, baseAmount - walletUsed);
 
-      if (paymentMethod === 'wallet' && totalAmount > 0) {
+      if (paymentMethod === PAYMENT_METHODS.WALLET && totalAmount > 0) {
         throw new Error('Insufficient wallet balance to cover the full order');
       }
 
@@ -96,10 +102,10 @@ class OrderService {
         walletUsed,
         paymentMethod,
         addressId,
-        status: paymentMethod === 'online' ? 'Placed' : 'Pending', // Online paid orders start as Placed
+        status: (paymentMethod === PAYMENT_METHODS.ONLINE || paymentMethod === PAYMENT_METHODS.WALLET) ? ORDER_STATUS.PLACED : ORDER_STATUS.PENDING,
         pendingAt: new Date(),
-        placedAt: paymentMethod === 'online' ? new Date() : null,
-        stripePaymentIntentId: orderSummary?.stripePaymentIntentId
+        placedAt: (paymentMethod === PAYMENT_METHODS.ONLINE || paymentMethod === PAYMENT_METHODS.WALLET) ? new Date() : null,
+        stripePaymentIntentId: stripePaymentIntentId || null
       }, { transaction: t });
 
       const orderItems = cart.items.map(item => ({
@@ -208,36 +214,33 @@ class OrderService {
     const order = await Order.findByPk(orderId);
     if (!order) throw new Error('Order not found');
     
-    const statusOrder = ['Pending', 'Placed', 'Packed', 'Out for Delivery', 'Delivered'];
-    const currentIndex = statusOrder.indexOf(order.status);
-    const nextIndex = statusOrder.indexOf(nextStatus);
+    const currentIndex = ORDER_STATUS_FLOW.indexOf(order.status);
+    const nextIndex = ORDER_STATUS_FLOW.indexOf(nextStatus);
 
-    if (order.status === 'Delivered') {
+    if (order.status === ORDER_STATUS.DELIVERED) {
       throw new Error('Order is already Delivered and cannot be changed.');
     }
 
     // Restriction: Cannot skip steps, cannot go backward
     if (nextIndex !== currentIndex + 1) {
-      throw new Error(`Invalid status transition from ${order.status} to ${nextStatus}. Order must follow: Pending -> Packed -> Out for Delivery -> Delivered`);
+      throw new Error(`Invalid status transition from ${order.status} to ${nextStatus}. Order must follow: Pending -> Placed -> Packed -> Out for Delivery -> Delivered`);
     }
 
-    // Note: Delivered should ideally only be reached via verifyOrderOTP, 
-    // but we allow it here if someone calls it, though the flow usually goes through OTP.
     const t = await sequelize.transaction();
     try {
       order.status = nextStatus;
       
-      if (nextStatus === 'Out for Delivery') {
+      if (nextStatus === ORDER_STATUS.OUT_FOR_DELIVERY) {
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
         order.otp = otp;
         order.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); 
       }
       
-      if (nextStatus === 'Pending') order.pendingAt = new Date();
-      if (nextStatus === 'Placed') order.placedAt = new Date();
-      if (nextStatus === 'Packed') order.packedAt = new Date();
-      if (nextStatus === 'Out for Delivery') order.outForDeliveryAt = new Date();
-      if (nextStatus === 'Delivered') {
+      if (nextStatus === ORDER_STATUS.PENDING) order.pendingAt = new Date();
+      if (nextStatus === ORDER_STATUS.PLACED) order.placedAt = new Date();
+      if (nextStatus === ORDER_STATUS.PACKED) order.packedAt = new Date();
+      if (nextStatus === ORDER_STATUS.OUT_FOR_DELIVERY) order.outForDeliveryAt = new Date();
+      if (nextStatus === ORDER_STATUS.DELIVERED) {
         order.deliveredAt = new Date();
         await this._distributeRewards(order, t);
       }
@@ -250,6 +253,7 @@ class OrderService {
       throw e;
     }
   }
+
 
   async verifyOrderOTP(orderId, enteredOTP) {
     const order = await Order.findByPk(orderId);
@@ -303,19 +307,16 @@ class OrderService {
     // CASE 1: FIRST ORDER (₹20 cashback)
     if (!user.firstOrderDone) {
       cashbackAmount = 20;
-      cashbackSource = 'first_order';
+      cashbackSource = WALLET_SOURCES.FIRST_ORDER;
       cashbackDesc = 'First order bonus';
       
       user.firstOrderDone = true;
       await user.save({ transaction });
     } 
     // CASE 2: NORMAL ORDER (₹10 cashback if order value >= 100)
-    // We use totalAmount + walletUsed as the "Order value" to follow common sense, 
-    // but the prompt says IF totalAmount >= 100. 
-    // In our model, totalAmount is the amount paid via COD/UPI.
     else if ((order.totalAmount + order.walletUsed) >= 100) {
       cashbackAmount = 10;
-      cashbackSource = 'order';
+      cashbackSource = WALLET_SOURCES.ORDER;
       cashbackDesc = `Cashback for order #${order.id}`;
     }
 
@@ -324,7 +325,7 @@ class OrderService {
       await wallet.save({ transaction });
       await WalletTransaction.create({
         userId: user.id,
-        type: 'credit',
+        type: WALLET_TRANSACTION_TYPES.CREDIT,
         amount: cashbackAmount,
         source: cashbackSource,
         description: cashbackDesc
@@ -341,6 +342,53 @@ class OrderService {
     });
     return orders;
   }
+
+  /**
+   * Secured calculation of order amount for payment intents
+   */
+  async calculateRequiredPayment(userId, { couponCode, useWallet }) {
+    const cart = await Cart.findOne({
+      where: { userId },
+      include: [{ model: CartItem, as: 'items', include: [{ model: Product, as: 'product' }] }]
+    });
+
+    if (!cart || cart.items.length === 0) return 0;
+
+    const subtotal = cart.items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    
+    let discount = 0;
+    if (couponCode) {
+      const coupon = await Coupon.findOne({ where: { code: couponCode, isActive: true } });
+      if (coupon && subtotal >= coupon.minOrderAmount) {
+        if (coupon.discountType === 'percentage') {
+          discount = Math.round((subtotal * coupon.discountValue) / 100);
+        } else {
+          discount = coupon.discountValue;
+        }
+      }
+    }
+
+    const DELIVERY_THRESHOLD = 500;
+    const DELIVERY_FEE = 25;
+    const HANDLING_FEE = 5;
+
+    const deliveryFee = (subtotal === 0 || subtotal > DELIVERY_THRESHOLD) ? 0 : DELIVERY_FEE;
+    const handlingFee = subtotal > 0 ? HANDLING_FEE : 0;
+    const deliveryCharge = deliveryFee + handlingFee;
+
+    const baseAmount = subtotal - discount + deliveryCharge;
+    
+    let walletUsed = 0;
+    if (useWallet) {
+      const wallet = await Wallet.findOne({ where: { userId } });
+      if (wallet) {
+        walletUsed = Math.min(wallet.balance, baseAmount);
+      }
+    }
+
+    return Math.max(0, baseAmount - walletUsed);
+  }
 }
+
 
 module.exports = new OrderService();

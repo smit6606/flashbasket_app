@@ -1,8 +1,8 @@
 import api from './api';
 
 const paymentService = {
-  createPaymentIntent: async (amount) => {
-    return api.post('/payment/create-payment-intent', { amount });
+  createPaymentIntent: async (params) => {
+    return api.post('/payment/create-payment-intent', params);
   }
 };
 

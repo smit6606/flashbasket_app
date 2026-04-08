@@ -104,6 +104,7 @@ export default function Orders() {
 
   const statusOptions = [
     { label: 'Pending', value: 'Pending', icon: <PendingIcon size="small" /> },
+    { label: 'Placed', value: 'Placed', icon: <OrderIcon size="small" /> },
     { label: 'Packed', value: 'Packed', icon: <PackedIcon size="small" /> },
     { label: 'Out for Delivery', value: 'Out for Delivery', icon: <DeliveryIcon size="small" /> },
     { label: 'Delivered', value: 'Delivered', icon: <DoneIcon size="small" /> },
@@ -262,7 +263,7 @@ export default function Orders() {
               startAdornment={<SearchIcon fontSize="small" sx={{ mr: 1, color: 'text.disabled', display: 'none' }} />}
             >
               <MenuItem value="All">All Operations</MenuItem>
-              {(isPastOrders ? ['Delivered', 'Cancelled'] : ['Pending', 'Packed', 'Out for Delivery']).map(s => (
+              {(isPastOrders ? ['Delivered', 'Cancelled'] : ['Pending', 'Placed', 'Packed', 'Out for Delivery']).map(s => (
                 <MenuItem key={s} value={s}>{s}</MenuItem>
               ))}
             </Select>
@@ -348,7 +349,7 @@ export default function Orders() {
         </Typography>
         {statusOptions
           .filter(option => {
-            const statusOrder = ['Pending', 'Packed', 'Out for Delivery', 'Delivered'];
+            const statusOrder = ['Pending', 'Placed', 'Packed', 'Out for Delivery', 'Delivered'];
             const currentIndex = statusOrder.indexOf(selectedOrder?.status);
             const nextIndex = statusOrder.indexOf(option.value);
             
