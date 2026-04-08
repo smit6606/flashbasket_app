@@ -19,6 +19,7 @@ const APP_CONFIG = {
 
   // Google Maps
   GOOGLE_MAPS_KEY: '',
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_51TJqPJBHwJ5Zdh2EvFbnKBldRZC5ZK7i6hD7PZ5jgcbRy6CjO5gFhqpFMZJidjTmSOWbAWCUPJ8sZAHi43RZ8YLh002Do2FrZe',
 
   // Fallback UI Values
   DEFAULT_PLACEHOLDER: 'https://cdn-icons-png.flaticon.com/512/3081/3081986.png',

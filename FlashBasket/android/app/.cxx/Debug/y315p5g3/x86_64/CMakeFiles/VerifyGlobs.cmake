@@ -36,6 +36,30 @@ if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   file(TOUCH_NOCREATE "/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs")
 endif()
 
+# react_codegen_SRCS at /home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/*.cpp")
+set(OLD_GLOB
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/rnstripe-generated.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
+# react_codegen_SRCS at /home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
+file(GLOB NEW_GLOB LIST_DIRECTORIES true "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/*.cpp")
+set(OLD_GLOB
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/ComponentDescriptors.cpp"
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/EventEmitters.cpp"
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/Props.cpp"
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/ShadowNodes.cpp"
+  "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/react/renderer/components/rnstripe/States.cpp"
+  )
+if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
+  message("-- GLOB mismatch!")
+  file(TOUCH_NOCREATE "/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/x86_64/CMakeFiles/cmake.verify_globs")
+endif()
+
 # react_codegen_SRCS at /home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-config/android/build/generated/source/codegen/jni/CMakeLists.txt:9 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-config/android/build/generated/source/codegen/jni/*.cpp")
 set(OLD_GLOB

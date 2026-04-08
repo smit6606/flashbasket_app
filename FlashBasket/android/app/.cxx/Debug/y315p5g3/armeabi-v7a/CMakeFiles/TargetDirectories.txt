@@ -4,6 +4,9 @@
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/react_codegen_rnasyncstorage.dir
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/edit_cache.dir
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnasyncstorage_autolinked_build/CMakeFiles/rebuild_cache.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnstripe_autolinked_build/CMakeFiles/react_codegen_rnstripe.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnstripe_autolinked_build/CMakeFiles/edit_cache.dir
+/home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/rnstripe_autolinked_build/CMakeFiles/rebuild_cache.dir
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/RNCConfigSpec_autolinked_build/CMakeFiles/react_codegen_RNCConfigSpec.dir
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/RNCConfigSpec_autolinked_build/CMakeFiles/edit_cache.dir
 /home/dev-05/FlashBasket_Application/FlashBasket/android/app/.cxx/Debug/y315p5g3/armeabi-v7a/RNCConfigSpec_autolinked_build/CMakeFiles/rebuild_cache.dir

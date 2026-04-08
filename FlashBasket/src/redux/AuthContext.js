@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import authService from '../services/authService';
+import { setOnUnauthorizedCallback } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -13,6 +14,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     loadStoredData();
+    // Set global unauthorized handler
+    setOnUnauthorizedCallback(() => {
+      logout();
+    });
   }, []);
 
   const loadStoredData = async () => {

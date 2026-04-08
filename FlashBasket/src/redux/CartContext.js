@@ -14,6 +14,11 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const syncTimeouts = useRef({}); // Track timeouts per productId
+  const cartRef = useRef(cart);
+
+  useEffect(() => {
+    cartRef.current = cart;
+  }, [cart]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -142,41 +147,29 @@ export const CartProvider = ({ children }) => {
   };
 
   const syncWithBackend = async (id) => {
-    // We need the latest state to sync. Since this is an async operation,
-    // we'll fetch from the current cart state (though this might be slightly tricky with closures)
-    // Actually, a better way is to pass the quantity, but we want the LATEST quantity.
-    
-    // Instead of passing quantity, we'll just call loadCart(false) after a small delay
-    // but the actual addToCart/updateQuantity API must be called.
-    
-    // Let's find the item in the current state
-    setCart(currentCart => {
-      if (!currentCart) return currentCart;
-      
-      const item = currentCart.items.find(i => 
-        i.productId === Number(id) || i.id === id || i.id === `temp-${id}`
-      );
+    // Use the latest state from ref to avoid closure issues
+    const currentCart = cartRef.current;
+    if (!currentCart || !currentCart.items) return;
 
-      if (item) {
-        // Decide whether to call addToCart (if it was new) or updateQuantity
+    const item = currentCart.items.find(i => 
+      i.productId === Number(id) || i.id === id || i.id === `temp-${id}`
+    );
+
+    if (item) {
+      try {
         if (typeof item.id === 'string' && item.id.startsWith('temp-')) {
-          cartService.addToCart(item.productId, item.quantity).then(() => {
-            loadCart(false); // Reload to get real IDs
-          }).catch(err => {
-             console.error('Background addToCart failed', err);
-             loadCart(false); // Sync back to real state
-          });
+          await cartService.addToCart(item.productId, item.quantity);
         } else {
-          cartService.updateCartQuantity(item.id, item.quantity).then(() => {
-            // Optional: loadCart(false) if we want absolute sync
-          }).catch(err => {
-             console.error('Background updateQuantity failed', err);
-             loadCart(false);
-          });
+          await cartService.updateCartQuantity(item.id, item.quantity);
         }
+        await loadCart(false); // Reload to get real IDs and sync state
+      } catch (err) {
+        console.error('Background cart sync failed', err);
+        // If it's a 401, AuthContext will handle it via the global interceptor we'll add
+        // But we still want to reload to revert optimistic UI if needed
+        loadCart(false);
       }
-      return currentCart;
-    });
+    }
   };
 
   const clearCart = async () => {

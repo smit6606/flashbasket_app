@@ -13,6 +13,7 @@ const walletRoutes = require('./routes/walletRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
 const couponRoutes = require('./routes/couponRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Basic route
 app.get('/api', (req, res) => {

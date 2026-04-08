@@ -37,19 +37,8 @@ const SplashScreen = ({ navigation }) => {
       ]),
     ]).start();
 
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('token');
-      
-      setTimeout(() => {
-        if (token) {
-          navigation.replace('Main');
-        } else {
-          navigation.replace('Auth');
-        }
-      }, 3000);
-    };
-
-    checkAuth();
+    // Splash screen is now handled by AppNavigation conditional rendering
+    // based on the AuthContext loading/isAuthenticated state.
   }, [navigation]);
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>

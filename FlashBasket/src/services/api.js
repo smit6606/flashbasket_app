@@ -17,6 +17,12 @@ const api = axios.create({
   },
 });
 
+// Callback for unauthorized errors (to be set by AuthProvider)
+let onUnauthorizedCallback = null;
+export const setOnUnauthorizedCallback = (cb) => {
+  onUnauthorizedCallback = cb;
+};
+
 // Request Interceptor: Attach JWT Token
 api.interceptors.request.use(
   async (config) => {
@@ -59,6 +65,9 @@ api.interceptors.response.use(
       if (status === 401 && !originalRequest._retry) {
         console.warn('[API Auth Error] Unauthorized. Clearing local session.');
         await AsyncStorage.multiRemove(['token', 'user']);
+        if (onUnauthorizedCallback) {
+          onUnauthorizedCallback();
+        }
       }
       
       // Extract standardized error message

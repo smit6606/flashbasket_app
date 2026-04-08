@@ -10,23 +10,28 @@ import { FavoritesProvider } from './src/constants/FavoritesContext';
 import { RecentlyViewedProvider } from './src/constants/RecentlyViewedContext';
 import AppNavigation from './src/navigation/AppNavigation';
 
+import { StripeProvider } from '@stripe/stripe-react-native';
+import APP_CONFIG from './src/config';
+
 const App = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <AuthProvider>
-            <UserProvider>
-              <CartProvider>
-                <FavoritesProvider>
-                  <RecentlyViewedProvider>
-                    <AppNavigation />
-                  </RecentlyViewedProvider>
-                </FavoritesProvider>
-              </CartProvider>
-            </UserProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <StripeProvider publishableKey={APP_CONFIG.STRIPE_PUBLISHABLE_KEY}>
+          <ThemeProvider>
+            <AuthProvider>
+              <UserProvider>
+                <CartProvider>
+                  <FavoritesProvider>
+                    <RecentlyViewedProvider>
+                      <AppNavigation />
+                    </RecentlyViewedProvider>
+                  </FavoritesProvider>
+                </CartProvider>
+              </UserProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </StripeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

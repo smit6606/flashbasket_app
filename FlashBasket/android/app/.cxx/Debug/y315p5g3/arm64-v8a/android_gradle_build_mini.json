@@ -1,6 +1,7 @@
 {
   "buildFiles": [
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@react-native-async-storage/async-storage/android/build/generated/source/codegen/jni/CMakeLists.txt",
+    "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/@stripe/stripe-react-native/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-config/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-gesture-handler/android/build/generated/source/codegen/jni/CMakeLists.txt",
     "/home/dev-05/FlashBasket_Application/FlashBasket/node_modules/react-native-maps/android/src/main/jni/CMakeLists.txt",
@@ -33,11 +34,6 @@
       "abi": "arm64-v8a",
       "runtimeFiles": []
     },
-    "react_codegen_rnreanimated::@8afabad14bfffa3f8b9a": {
-      "artifactName": "react_codegen_rnreanimated",
-      "abi": "arm64-v8a",
-      "runtimeFiles": []
-    },
     "react_codegen_safeareacontext::@7984cd80db47aa7b952a": {
       "artifactName": "react_codegen_safeareacontext",
       "abi": "arm64-v8a",
@@ -62,16 +58,6 @@
       "artifactName": "react_codegen_rngesturehandler_codegen",
       "abi": "arm64-v8a",
       "runtimeFiles": []
-    },
-    "react_codegen_rnscreens::@25bcbd507e98d3a854ad": {
-      "artifactName": "react_codegen_rnscreens",
-      "abi": "arm64-v8a",
-      "output": "/home/dev-05/FlashBasket_Application/FlashBasket/android/app/build/intermediates/cxx/Debug/y315p5g3/obj/arm64-v8a/libreact_codegen_rnscreens.so",
-      "runtimeFiles": [
-        "/home/dev-05/.gradle/caches/9.0.0/transforms/df62f4a3c6818dc3cc09553936c6f2fd/transformed/react-android-0.84.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
-        "/home/dev-05/.gradle/caches/9.0.0/transforms/df62f4a3c6818dc3cc09553936c6f2fd/transformed/react-android-0.84.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
-        "/home/dev-05/.gradle/caches/9.0.0/transforms/6cb94eb4240b26bae55579cb79d8f81a/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
-      ]
     },
     "appmodules::@6890427a1f51a3e7e1df": {
       "artifactName": "appmodules",
@@ -101,6 +87,11 @@
       "abi": "arm64-v8a",
       "runtimeFiles": []
     },
+    "react_codegen_rnstripe::@65863f00eb0279fa1385": {
+      "artifactName": "react_codegen_rnstripe",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
     "react_codegen_rnworklets::@68f58d84d4754f193387": {
       "artifactName": "react_codegen_rnworklets",
       "abi": "arm64-v8a",
@@ -110,6 +101,21 @@
       "artifactName": "react_codegen_rnasyncstorage",
       "abi": "arm64-v8a",
       "runtimeFiles": []
+    },
+    "react_codegen_rnreanimated::@8afabad14bfffa3f8b9a": {
+      "artifactName": "react_codegen_rnreanimated",
+      "abi": "arm64-v8a",
+      "runtimeFiles": []
+    },
+    "react_codegen_rnscreens::@25bcbd507e98d3a854ad": {
+      "artifactName": "react_codegen_rnscreens",
+      "abi": "arm64-v8a",
+      "output": "/home/dev-05/FlashBasket_Application/FlashBasket/android/app/build/intermediates/cxx/Debug/y315p5g3/obj/arm64-v8a/libreact_codegen_rnscreens.so",
+      "runtimeFiles": [
+        "/home/dev-05/.gradle/caches/9.0.0/transforms/df62f4a3c6818dc3cc09553936c6f2fd/transformed/react-android-0.84.1-debug/prefab/modules/reactnative/libs/android.arm64-v8a/libreactnative.so",
+        "/home/dev-05/.gradle/caches/9.0.0/transforms/df62f4a3c6818dc3cc09553936c6f2fd/transformed/react-android-0.84.1-debug/prefab/modules/jsi/libs/android.arm64-v8a/libjsi.so",
+        "/home/dev-05/.gradle/caches/9.0.0/transforms/6cb94eb4240b26bae55579cb79d8f81a/transformed/fbjni-0.7.0/prefab/modules/fbjni/libs/android.arm64-v8a/libfbjni.so"
+      ]
     }
   }
 }

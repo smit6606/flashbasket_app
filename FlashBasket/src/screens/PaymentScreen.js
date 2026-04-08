@@ -7,6 +7,7 @@ import {
   ScrollView,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -15,15 +16,18 @@ import { useUser } from '../redux/UserContext';
 import { useCart } from '../redux/CartContext';
 import BillSummary from '../components/BillSummary';
 import orderService from '../services/orderService';
+import paymentService from '../services/paymentService';
 import QRCode from 'react-native-qrcode-svg';
+import { useStripe } from '@stripe/stripe-react-native';
 
 const PaymentScreen = ({ navigation, route }) => {
   const { orderSummary = {}, couponCode } = route.params || {};
   const { theme, isDark } = useTheme();
-  const { selectedAddress, loadWalletBalance } = useUser();
+  const { selectedAddress, loadWalletBalance, user } = useUser();
   const { clearCart } = useCart();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   
-  const [selectedMethod, setSelectedMethod] = useState('cod');
+  const [selectedMethod, setSelectedMethod] = useState('online');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -43,19 +47,63 @@ const PaymentScreen = ({ navigation, route }) => {
     }
 
     setLoading(true);
+    let stripePaymentIntentId = null;
+
     try {
+      const method = isFullyPaidByWallet ? 'wallet' : (isInstant ? 'cod' : selectedMethod);
+
+      if (method === 'online') {
+        // Step 1: Create Payment Intent on Backend
+        const response = await paymentService.createPaymentIntent(finalAmount);
+        
+        if (!response || !response.data || !response.data.clientSecret) {
+          throw new Error('Failed to initiate payment. Please try again.');
+        }
+
+        const { clientSecret } = response.data;
+        // Extract payment intent ID from client secret (pi_xxx_secret_yyy -> pi_xxx)
+        stripePaymentIntentId = clientSecret.split('_secret')[0];
+
+        // Step 2: Initialize Payment Sheet
+        const { error: initError } = await initPaymentSheet({
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'FlashBasket',
+          appearance: {
+            colors: {
+              primary: theme.colors.primary,
+            },
+          },
+        });
+
+        if (initError) {
+          throw new Error(initError.message);
+        }
+
+        // Step 3: Present Payment Sheet
+        const { error: presentError } = await presentPaymentSheet();
+
+        if (presentError) {
+          if (presentError.code === 'Canceled') {
+            throw new Error('CANCELLED');
+          }
+          throw new Error(presentError.message);
+        }
+      }
+
       const orderData = {
         addressId: selectedAddress.id,
-        paymentMethod: isFullyPaidByWallet ? 'wallet' : (isInstant ? 'cod' : selectedMethod),
+        paymentMethod: method === 'online' ? 'online' : method,
         couponCode: couponCode || null,
         useWallet: walletDeduction > 0,
-        orderSummary: orderSummary 
+        orderSummary: {
+          ...orderSummary,
+          stripePaymentIntentId: method === 'online' ? stripePaymentIntentId : null,
+        }
       };
 
       const response = await orderService.createOrder(orderData);
       
       if (response && response.data) {
-        // Refresh wallet balance immediately after order
         await loadWalletBalance();
         clearCart();
         navigation.navigate('OrderSuccessScreen', { 
@@ -64,7 +112,13 @@ const PaymentScreen = ({ navigation, route }) => {
         });
       }
     } catch (error) {
-      Alert.alert('Order Failed', error.message || 'Something went wrong');
+      console.log('Payment Error:', error);
+      
+      if (error.message === 'CANCELLED') {
+        Alert.alert('Payment Cancelled', 'You cancelled the payment process.');
+      } else {
+        Alert.alert('Payment Failed', error.message || 'Something went wrong. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -143,6 +197,12 @@ const PaymentScreen = ({ navigation, route }) => {
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Payment Methods</Text>
             <PaymentMethod 
+              id="online"
+              name="Online Payment"
+              icon="card"
+              description="Pay securely using Stripe (Cards, UPI, etc.)"
+            />
+            <PaymentMethod 
               id="cod"
               name="Cash on Delivery"
               icon="wallet"
@@ -150,9 +210,9 @@ const PaymentScreen = ({ navigation, route }) => {
             />
             <PaymentMethod 
               id="upi"
-              name="UPI Payment"
+              name="Flash QR (Scan & Pay)"
               icon="qr-code"
-              description="Scan and pay using any UPI app"
+              description="Scan and pay using our merchant QR"
             />
 
             {selectedMethod === 'upi' && (
@@ -219,14 +279,12 @@ const PaymentScreen = ({ navigation, route }) => {
             style={[
               styles.placeBtn, 
               { 
-                backgroundColor: (isFullyPaidByWallet || selectedMethod === 'cod' || paymentConfirmed) ? theme.colors.primary : theme.colors.textTertiary,
-                flex: isFullyPaidByWallet ? 1 : 1 
+                backgroundColor: (isFullyPaidByWallet || selectedMethod === 'cod' || selectedMethod === 'online' || paymentConfirmed) ? theme.colors.primary : theme.colors.textTertiary,
+                flex: 1 
               }
             ]}
             onPress={() => {
-              if (isFullyPaidByWallet || selectedMethod === 'cod') {
-                handlePlaceOrder();
-              } else if (!paymentConfirmed) {
+              if (!isFullyPaidByWallet && selectedMethod === 'upi' && !paymentConfirmed) {
                 Alert.alert('Payment Required', 'Please complete UPI payment and check the confirmation box');
               } else {
                 handlePlaceOrder();
@@ -234,9 +292,16 @@ const PaymentScreen = ({ navigation, route }) => {
             }}
             disabled={loading || (!isFullyPaidByWallet && selectedMethod === 'upi' && !paymentConfirmed)}
           >
-            <Text style={styles.placeBtnText}>
-              {loading ? 'Please wait...' : (isFullyPaidByWallet ? 'Place Wallet Order' : 'Place Order')}
-            </Text>
+            {loading ? (
+              <View style={styles.loadingRow}>
+                <ActivityIndicator color="#FFF" size="small" />
+                <Text style={[styles.placeBtnText, { marginLeft: 10 }]}>Processing...</Text>
+              </View>
+            ) : (
+              <Text style={styles.placeBtnText}>
+                {isFullyPaidByWallet ? 'Place Wallet Order' : 'Place Order'}
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -318,6 +383,7 @@ const styles = StyleSheet.create({
   instantBtnText: { fontWeight: '800', fontSize: 15 },
   placeBtn: { flex: 1, height: 54, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
   placeBtnText: { color: '#fff', fontWeight: '800', fontSize: 16 },
+  loadingRow: { flexDirection: 'row', alignItems: 'center' },
   walletPaidCard: {
     padding: 24,
     borderRadius: 20,

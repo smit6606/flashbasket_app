@@ -96,8 +96,10 @@ class OrderService {
         walletUsed,
         paymentMethod,
         addressId,
-        status: 'Pending',
-        pendingAt: new Date()
+        status: paymentMethod === 'online' ? 'Placed' : 'Pending', // Online paid orders start as Placed
+        pendingAt: new Date(),
+        placedAt: paymentMethod === 'online' ? new Date() : null,
+        stripePaymentIntentId: orderSummary?.stripePaymentIntentId
       }, { transaction: t });
 
       const orderItems = cart.items.map(item => ({
@@ -206,7 +208,7 @@ class OrderService {
     const order = await Order.findByPk(orderId);
     if (!order) throw new Error('Order not found');
     
-    const statusOrder = ['Pending', 'Packed', 'Out for Delivery', 'Delivered'];
+    const statusOrder = ['Pending', 'Placed', 'Packed', 'Out for Delivery', 'Delivered'];
     const currentIndex = statusOrder.indexOf(order.status);
     const nextIndex = statusOrder.indexOf(nextStatus);
 
@@ -232,6 +234,7 @@ class OrderService {
       }
       
       if (nextStatus === 'Pending') order.pendingAt = new Date();
+      if (nextStatus === 'Placed') order.placedAt = new Date();
       if (nextStatus === 'Packed') order.packedAt = new Date();
       if (nextStatus === 'Out for Delivery') order.outForDeliveryAt = new Date();
       if (nextStatus === 'Delivered') {

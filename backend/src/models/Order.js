@@ -47,7 +47,7 @@ const Order = sequelize.define('Order', {
     defaultValue: 'Pending',
   },
   paymentMethod: {
-    type: DataTypes.ENUM('cod', 'upi', 'card', 'wallet'),
+    type: DataTypes.ENUM('cod', 'upi', 'card', 'wallet', 'online'),
     defaultValue: 'cod',
   },
   addressId: {
@@ -63,6 +63,10 @@ const Order = sequelize.define('Order', {
     allowNull: true,
   },
   pendingAt: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  placedAt: {
     type: DataTypes.DATE,
     allowNull: true,
   },
@@ -85,6 +89,10 @@ const Order = sequelize.define('Order', {
   walletUsed: {
     type: DataTypes.FLOAT,
     defaultValue: 0,
+  },
+  stripePaymentIntentId: {
+    type: DataTypes.STRING,
+    allowNull: true,
   }
 }, {
   timestamps: true,
