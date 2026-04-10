@@ -18,6 +18,9 @@ import ProductCard from '../components/ProductCard';
 import productService from '../services/productService';
 import DynamicCartBar from '../components/DynamicCartBar';
 import { useCart } from '../redux/CartContext';
+import { ProductCardSkeleton } from '../components/common/SkeletonComponents';
+import { Animated } from 'react-native';
+import { useRef } from 'react';
 
 const { width } = Dimensions.get('window');
 
@@ -30,6 +33,19 @@ const SearchScreen = ({ navigation }) => {
   const [recentSearches, setRecentSearches] = useState([
     'Milk', 'Bread', 'Organic Eggs', 'Chips', 'Soft Drinks'
   ]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!loading && searchQuery.length > 0) {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading, searchQuery]);
 
   const searchProducts = useCallback(async (query) => {
     if (!query.trim()) {
@@ -94,9 +110,15 @@ const SearchScreen = ({ navigation }) => {
 
       <View style={styles.content}>
         {loading ? (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-            <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Searching...</Text>
+          <View style={styles.listContainer}>
+            <View style={styles.columnWrapper}>
+               <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+               <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+            </View>
+            <View style={styles.columnWrapper}>
+               <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+               <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+            </View>
           </View>
         ) : searchQuery.length === 0 ? (
           <View style={styles.recentSection}>
@@ -120,24 +142,26 @@ const SearchScreen = ({ navigation }) => {
             </View>
           </View>
         ) : results.length > 0 ? (
-          <FlatList
-            data={results}
-            keyExtractor={(item) => item.id.toString()}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.listContainer}
-            columnWrapperStyle={styles.columnWrapper}
-            renderItem={({ item }) => (
-              <View style={styles.productWrapper}>
-                <ProductCard 
-                  product={item} 
-                  width="100%" 
-                  variant="modern"
-                  style={{ marginHorizontal: 0, marginBottom: 12 }} 
-                />
-              </View>
-            )}
-          />
+          <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+            <FlatList
+              data={results}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.listContainer}
+              columnWrapperStyle={styles.columnWrapper}
+              renderItem={({ item }) => (
+                <View style={styles.productWrapper}>
+                  <ProductCard 
+                    product={item} 
+                    width="100%" 
+                    variant="modern"
+                    style={{ marginHorizontal: 0, marginBottom: 12 }} 
+                  />
+                </View>
+              )}
+            />
+          </Animated.View>
         ) : (
           <View style={styles.emptyContainer}>
             <Icon name="search-outline" size={80} color={theme.colors.textTertiary} />

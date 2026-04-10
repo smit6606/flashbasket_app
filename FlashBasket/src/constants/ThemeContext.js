@@ -18,17 +18,15 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     loadStoredTheme();
-  }, []);
+  }, [systemColorScheme]);
 
   const loadStoredTheme = async () => {
     try {
       const storedPreference = await AsyncStorage.getItem(THEME_STORAGE_KEY);
       if (storedPreference !== null) {
         setIsDark(storedPreference === 'dark');
-      } else {
-        // Fallback to light as requested (First time user = Light)
-        setIsDark(false);
       }
+      // If no preference, we stay with system preference
     } catch (error) {
       console.error('Error loading theme preference:', error);
     } finally {
@@ -51,8 +49,9 @@ export const ThemeProvider = ({ children }) => {
       theme: isDark ? theme.dark : theme.light,
       isDark,
       toggleTheme,
+      isThemeLoading: loading,
     };
-  }, [isDark]);
+  }, [isDark, loading]);
 
   // if (loading) return null; // Removed to prevent permanent black screen if storage hangs. Theme will default and then update.
 

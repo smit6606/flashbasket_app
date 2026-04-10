@@ -1,28 +1,35 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
-import { useTheme } from '../../constants/ThemeContext';
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, Animated, Dimensions, Easing } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import { useTheme } from '../../constants/ThemeContext';
 
-const Skeleton = ({ width, height, borderRadius = 8, style }) => {
-  const { theme } = useTheme();
-  const animatedValue = React.useRef(new Animated.Value(0)).current;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const Skeleton = ({ width, height, borderRadius = 4, style }) => {
+  const { isDark } = useTheme();
+  const shimmerAnimatedValue = useRef(new Animated.Value(0)).current;
+
+  const BASE_COLOR = isDark ? '#1F1F1F' : '#E0E0E0';
+  const HIGHLIGHT_COLOR = isDark ? '#2A2A2A' : '#F5F5F5';
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.timing(animatedValue, {
-        toValue: 1,
-        duration: 1500,
-        useNativeDriver: true,
-      })
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [animatedValue]);
+    const startAnimation = () => {
+      shimmerAnimatedValue.setValue(0);
+      Animated.loop(
+        Animated.timing(shimmerAnimatedValue, {
+          toValue: 1,
+          duration: 1200,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    };
 
-  // Ensure width is a number for interpolation if possible, otherwise use a safe large number
-  const numericWidth = typeof width === 'number' ? width : 400;
-  
-  const translateX = animatedValue.interpolate({
+    startAnimation();
+  }, [shimmerAnimatedValue]);
+
+  const numericWidth = typeof width === 'number' ? width : SCREEN_WIDTH;
+  const translateX = shimmerAnimatedValue.interpolate({
     inputRange: [0, 1],
     outputRange: [-numericWidth, numericWidth],
   });
@@ -30,12 +37,13 @@ const Skeleton = ({ width, height, borderRadius = 8, style }) => {
   return (
     <View
       style={[
-        styles.skeleton,
-        { 
-          width, 
-          height, 
-          borderRadius, 
-          backgroundColor: theme.colors.surfaceVariant 
+        styles.container,
+        {
+          width: width || '100%',
+          height: height || 20,
+          borderRadius: borderRadius,
+          backgroundColor: BASE_COLOR,
+          overflow: 'hidden',
         },
         style,
       ]}
@@ -49,11 +57,7 @@ const Skeleton = ({ width, height, borderRadius = 8, style }) => {
         ]}
       >
         <LinearGradient
-          colors={[
-            'transparent',
-            'rgba(255, 255, 255, 0.4)',
-            'transparent',
-          ]}
+          colors={[BASE_COLOR, HIGHLIGHT_COLOR, BASE_COLOR]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={StyleSheet.absoluteFill}
@@ -64,8 +68,8 @@ const Skeleton = ({ width, height, borderRadius = 8, style }) => {
 };
 
 const styles = StyleSheet.create({
-  skeleton: {
-    overflow: 'hidden',
+  container: {
+    position: 'relative',
   },
 });
 

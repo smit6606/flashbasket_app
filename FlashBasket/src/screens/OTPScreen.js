@@ -37,11 +37,12 @@ const OTPScreen = ({ route, navigation }) => {
     try {
       const response = await loginWithOtp(phone, otpValue);
       if (response.success) {
-        if (response.user && response.user.name) {
-          navigation.replace('Main');
-        } else {
+        // If user has no name, they need to complete profile
+        if (!response.user || !response.user.name) {
           navigation.navigate('CreateProfile', { phone });
         }
+        // Note: If user.name exists, AuthContext update will automatically trigger 
+        // navigation to 'Main' via AppNavigation's conditional rendering.
       }
     } catch (error) {
       Alert.alert('Error', error.message || 'Invalid OTP, please try again');

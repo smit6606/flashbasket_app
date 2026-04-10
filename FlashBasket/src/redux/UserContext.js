@@ -12,8 +12,8 @@ export const UserProvider = ({ children }) => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [wallet, setWallet] = useState({ balance: 0 });
-  const [addressLoading, setAddressLoading] = useState(false);
-  const [walletLoading, setWalletLoading] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(isAuthenticated);
+  const [walletLoading, setWalletLoading] = useState(isAuthenticated);
   const [error, setError] = useState(null);
   const PERSIST_KEY = 'selected_address_id';
 

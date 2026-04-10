@@ -11,10 +11,12 @@ import ProductSection from '../components/ProductSection';
 import DynamicCartBar from '../components/DynamicCartBar';
 import Footer from '../components/Footer';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { HomeSkeleton } from '../components/common/SkeletonComponents';
 
 import { useUser } from '../redux/UserContext';
 import { useCart } from '../redux/CartContext';
 import { useAuth } from '../redux/AuthContext';
+import { useData } from '../redux/DataContext';
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
 import orderService from '../services/orderService';
@@ -26,15 +28,44 @@ const HomeScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
   const { user } = useAuth();
   const { getCartCount, getCartTotal } = useCart();
+  const { sections: preloadedSections, buyAgainProducts: preloadedBuyAgain, refreshData, isDataLoaded } = useData();
   
   const { addresses, selectedAddress, setSelectedAddress, deleteAddress } = useUser();
   const [categories, setCategories] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [buyAgainProducts, setBuyAgainProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [sections, setSections] = useState(preloadedSections || []);
+  const [buyAgainProducts, setBuyAgainProducts] = useState(preloadedBuyAgain || []);
   const [refreshing, setRefreshing] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // Fade in animation when data is loaded
+  useEffect(() => {
+    if (isDataLoaded) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [isDataLoaded]);
+
+  // Sync with preloaded data on mount
+  useEffect(() => {
+    if (preloadedSections?.length > 0) {
+      setSections(preloadedSections);
+    }
+    if (preloadedBuyAgain?.length > 0) {
+      setBuyAgainProducts(preloadedBuyAgain);
+    }
+  }, [preloadedSections, preloadedBuyAgain]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -43,59 +74,6 @@ const HomeScreen = ({ navigation }) => {
   );
 
   const scrollY = useRef(new Animated.Value(0)).current;
-
-  const fetchHomeData = useCallback(async () => {
-    try {
-      const categoryRes = await categoryService.getAllCategories();
-      const catList = categoryRes.data || [];
-      setCategories(catList);
-
-      const productRes = await productService.getAllProducts({ limit: 100 });
-      const allProducts = productRes.data?.data || productRes.data || [];
-
-      const dynamicSections = catList.map(cat => ({
-        id: cat.id,
-        title: cat.name,
-        data: allProducts.filter(p => p.categoryId === cat.id).slice(0, 8)
-      })).filter(section => section.data.length > 0);
-
-      const flashDeals = allProducts.filter(p => p.discount > 0).slice(0, 8);
-      
-      const finalSections = [];
-      if (flashDeals.length > 0) {
-        finalSections.push({ id: 'flash', title: 'Flash Deals 🔥', data: flashDeals });
-      }
-      finalSections.push(...dynamicSections);
-
-      setSections(finalSections);
-
-      // Fetch Buy Again if user is logged in
-      if (user) {
-        try {
-          const buyAgainRes = await orderService.getBuyAgainProducts();
-          setBuyAgainProducts(buyAgainRes.data || []);
-        } catch (err) {
-          console.error('Error fetching buy again:', err);
-        }
-      } else {
-        setBuyAgainProducts([]);
-      }
-    } catch (error) {
-      console.error('Error fetching home data:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchHomeData();
-  }, [fetchHomeData]);
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchHomeData();
-  };
 
   const cartCount = getCartCount();
   const cartTotal = getCartTotal();
@@ -107,78 +85,82 @@ const HomeScreen = ({ navigation }) => {
     extrapolate: 'clamp',
   });
 
+  const handleLocationPress = useCallback(() => {
+    setShowAddressModal(true);
+  }, []);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
-      <AppHeader onLocationPress={() => setShowAddressModal(true)} />
+      <AppHeader onLocationPress={handleLocationPress} />
       
-      {loading && !refreshing ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={[styles.loadingText, { color: theme.colors.textSecondary }]}>Setting up your store...</Text>
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <Animated.ScrollView
-            showsVerticalScrollIndicator={false}
-            onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
-            scrollEventThrottle={16}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
-            }
-          >
-            {/* Search Bar directs to Global Search */}
-            <View style={[styles.searchContainer, { backgroundColor: theme.colors.background }]}>
-              <SearchBar onPress={() => navigation.navigate('SearchScreen')} />
-            </View>
-
-            {/* Quick Category Grid */}
-            <View style={styles.categoryHeader}>
-              <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Shop by Category</Text>
-            </View>
-            <CategoryFilterRow 
-              activeCategory={selectedCategory}
-              onCategorySelect={(catId) => {
-                if (catId) {
-                  setSelectedCategory(catId);
-                  navigation.navigate('Categories', { categoryId: catId });
+      <View style={{ flex: 1 }}>
+        {!isDataLoaded ? (
+          <HomeSkeleton />
+        ) : (
+          <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+            <Animated.ScrollView
+                showsVerticalScrollIndicator={false}
+                onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+                scrollEventThrottle={16}
+                refreshControl={
+                  <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
                 }
-              }} 
-            />
+              >
+                {/* Search Bar directs to Global Search */}
+                <View style={[styles.searchContainer, { backgroundColor: theme.colors.background }]}>
+                  <SearchBar onPress={() => navigation.navigate('SearchScreen')} />
+                </View>
 
-            {/* Banners */}
-            <BannerCarousel />
-
-            {/* Buy Again Section */}
-            {buyAgainProducts.length > 0 && (
-              <ProductSection 
-                title="Buy Again" 
-                data={buyAgainProducts.slice(0, 8)} 
-                onViewAll={() => navigation.navigate('BuyAgainScreen')} 
-                isBuyAgain={true}
-              />
-            )}
-
-            {/* Dynamic Sections */}
-            {sections.length > 0 ? (
-              sections.map((section, index) => (
-                <ProductSection 
-                  key={section.id} 
-                  title={section.title} 
-                  data={section.data} 
-                  onViewAll={() => navigation.navigate('Categories', { categoryId: section.id, categoryName: section.title })} 
+                {/* Quick Category Grid */}
+                <View style={styles.categoryHeader}>
+                  <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Shop by Category</Text>
+                </View>
+                <CategoryFilterRow 
+                  activeCategory={selectedCategory}
+                  onCategorySelect={(catId) => {
+                    if (catId) {
+                      setSelectedCategory(catId);
+                      navigation.navigate('Categories', { categoryId: catId });
+                    }
+                  }} 
                 />
-              ))
-            ) : (
-              <View style={styles.noDataContainer}>
-                <Icon name="basket-off-outline" size={80} color={theme.colors.textTertiary} />
-                <Text style={[styles.noDataTitle, { color: theme.colors.text }]}>No Products Stocked</Text>
-              </View>
-            )}
 
-            <Footer theme={theme} />
-            <View style={{ height: 160 }} />
-          </Animated.ScrollView>
+                {/* Banners */}
+                <BannerCarousel />
+
+                {/* Buy Again Section */}
+                {buyAgainProducts.length > 0 && (
+                  <ProductSection 
+                    title="Buy Again" 
+                    data={buyAgainProducts.slice(0, 8)} 
+                    onViewAll={() => navigation.navigate('BuyAgain')} 
+                    isBuyAgain={true}
+                  />
+                )}
+
+                {/* Dynamic Sections */}
+                {sections.length > 0 ? (
+                  sections.map((section, index) => (
+                    <ProductSection 
+                      key={section.id} 
+                      title={section.title} 
+                      data={section.data} 
+                      onViewAll={() => navigation.navigate('Categories', { categoryId: section.id, categoryName: section.title })} 
+                    />
+                  ))
+                ) : (
+                  <View style={styles.noDataContainer}>
+                    <Icon name="basket-off-outline" size={80} color={theme.colors.textTertiary} />
+                    <Text style={[styles.noDataTitle, { color: theme.colors.text }]}>No Products Stocked</Text>
+                  </View>
+                )}
+
+                <Footer theme={theme} />
+                <View style={{ height: 160 }} />
+              </Animated.ScrollView>
+          </Animated.View>
+        )}
 
           {/* Sticky Offer Bar and Cart Bar */}
           <DynamicCartBar 
@@ -189,7 +171,6 @@ const HomeScreen = ({ navigation }) => {
             onOfferPress={() => navigation.navigate('OfferScreen')}
           />
         </View>
-      )}
 
       <AddressModal 
         visible={showAddressModal}

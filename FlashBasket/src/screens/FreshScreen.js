@@ -8,6 +8,9 @@ import productService from '../services/productService';
 import categoryService from '../services/categoryService';
 import { useCart } from '../redux/CartContext';
 import DynamicCartBar from '../components/DynamicCartBar';
+import { ProductCardSkeleton } from '../components/common/SkeletonComponents';
+import { Animated } from 'react-native';
+import { useRef } from 'react';
 
 const FreshScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
@@ -16,9 +19,22 @@ const FreshScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     fetchFreshProducts();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading]);
 
   const fetchFreshProducts = async () => {
     try {
@@ -79,8 +95,15 @@ const FreshScreen = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+        <View style={styles.listContent}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+             <View style={styles.productWrapper}><ProductCardSkeleton /></View>
+             <View style={styles.productWrapper}><ProductCardSkeleton /></View>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 }}>
+             <View style={styles.productWrapper}><ProductCardSkeleton /></View>
+             <View style={styles.productWrapper}><ProductCardSkeleton /></View>
+          </View>
         </View>
       ) : error ? (
         <View style={styles.center}>
@@ -94,27 +117,29 @@ const FreshScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
       ) : (
-        <FlatList
-          data={products}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={loading} onRefresh={fetchFreshProducts} />
-          }
-          renderItem={({ item }) => (
-            <View style={styles.productWrapper}>
-              <ProductCard product={item} />
-            </View>
-          )}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Icon name="leaf" size={60} color={theme.colors.textSecondary} />
-              <Text style={[styles.emptyText, { color: theme.colors.text }]}>No fresh products available.</Text>
-            </View>
-          }
-        />
+        <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+          <FlatList
+            data={products}
+            keyExtractor={(item) => item.id.toString()}
+            numColumns={2}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={loading} onRefresh={fetchFreshProducts} />
+            }
+            renderItem={({ item }) => (
+              <View style={styles.productWrapper}>
+                <ProductCard product={item} />
+              </View>
+            )}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Icon name="leaf" size={60} color={theme.colors.textSecondary} />
+                <Text style={[styles.emptyText, { color: theme.colors.text }]}>No fresh products available.</Text>
+              </View>
+            }
+          />
+        </Animated.View>
       )}
       <DynamicCartBar 
         visible={getCartCount() > 0} 

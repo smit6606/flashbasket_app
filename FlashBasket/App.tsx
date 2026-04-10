@@ -8,27 +8,17 @@ import { UserProvider } from './src/redux/UserContext';
 import { CartProvider } from './src/redux/CartContext';
 import { FavoritesProvider } from './src/constants/FavoritesContext';
 import { RecentlyViewedProvider } from './src/constants/RecentlyViewedContext';
+import { DataProvider } from './src/redux/DataContext';
 import AppNavigation from './src/navigation/AppNavigation';
-import SplashScreen from 'react-native-splash-screen';
 
 import { StripeProvider } from '@stripe/stripe-react-native';
 import APP_CONFIG from './src/config';
 
 const App = () => {
+  // The native splash screen is kept visible until AppNavigation determines 
+  // the auth state and mounts the first real screen for a 'one-screen' experience.
   useEffect(() => {
-    console.log('[App] Initializing...');
-    
-    // Hide native splash screen after a small delay to ensure JS is ready
-    const timer = setTimeout(() => {
-      try {
-        console.log('[App] Hiding native splash screen...');
-        SplashScreen.hide();
-      } catch (e) {
-        console.warn('[App] Failed to hide splash screen:', e);
-      }
-    }, 1500);
-
-    return () => clearTimeout(timer);
+    // Global initialization logic if any
   }, []);
 
 
@@ -43,7 +33,9 @@ const App = () => {
                 <CartProvider>
                   <FavoritesProvider>
                     <RecentlyViewedProvider>
-                      <AppNavigation />
+                      <DataProvider>
+                        <AppNavigation />
+                      </DataProvider>
                     </RecentlyViewedProvider>
                   </FavoritesProvider>
                 </CartProvider>

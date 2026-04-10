@@ -147,7 +147,7 @@ const OrderHistoryScreen = ({ navigation }) => {
               </Text>
               <TouchableOpacity 
                 style={[styles.shopButton, { backgroundColor: theme.colors.primary }]}
-                onPress={() => navigation.navigate('Home')}
+                 onPress={() => navigation.navigate('BottomTabs', { screen: 'Home' })}
               >
                 <Text style={styles.shopButtonText}>Start Shopping</Text>
               </TouchableOpacity>

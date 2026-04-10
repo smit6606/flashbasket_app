@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator, Image, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../constants/ThemeContext';
@@ -8,6 +8,8 @@ import ProductCard from '../components/ProductCard';
 import FilterModal from '../components/FilterModal';
 import SortModal from '../components/SortModal';
 import DynamicCartBar from '../components/DynamicCartBar';
+import { CategoriesPageSkeleton, ProductCardSkeleton } from '../components/common/SkeletonComponents';
+import { Animated } from 'react-native';
 
 import productService from '../services/productService';
 import categoryService from '../services/categoryService';
@@ -33,6 +35,30 @@ const CategoriesScreen = ({ route, navigation }) => {
     rating: null,
     discount: null,
   });
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const productsFadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (!loading) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    if (!productsLoading) {
+      productsFadeAnim.setValue(0);
+      Animated.timing(productsFadeAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [productsLoading]);
 
   useEffect(() => {
     fetchCategories();
@@ -140,6 +166,17 @@ const CategoriesScreen = ({ route, navigation }) => {
     return count;
   }, [filters]);
 
+  const renderProductItem = useCallback(({ item }) => (
+    <View style={styles.productWrapper}>
+      <ProductCard 
+        product={item} 
+        width="100%" 
+        variant="modern"
+        style={{ marginHorizontal: 0, marginBottom: 12 }} 
+      />
+    </View>
+  ), []);
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={theme.colors.background} />
@@ -158,13 +195,10 @@ const CategoriesScreen = ({ route, navigation }) => {
       </View>
 
       <View style={{ flex: 1 }}>
-        <View style={styles.content}>
         {loading ? (
-          <View style={styles.centerContainer}>
-            <ActivityIndicator size="large" color={theme.colors.primary} />
-          </View>
+          <CategoriesPageSkeleton />
         ) : (
-          <>
+          <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
             <CategorySidebar
               categories={categories}
               activeCategory={activeCategoryId}
@@ -179,7 +213,7 @@ const CategoriesScreen = ({ route, navigation }) => {
                   {filteredProducts.length} Products
                 </Text>
               </View>
-
+ 
               {/* Advanced Filter Row */}
               <View style={[styles.filterSortRow, { borderBottomColor: theme.colors.border, backgroundColor: theme.colors.surface }]}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => setFilterVisible(true)}>
@@ -201,50 +235,49 @@ const CategoriesScreen = ({ route, navigation }) => {
               </View>
     
               {productsLoading ? (
-                <View style={styles.centerContainer}>
-                  <ActivityIndicator size="large" color={theme.colors.primary} />
+                <View style={styles.listContainer}>
+                  <View style={styles.columnWrapper}>
+                    <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+                    <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+                  </View>
+                  <View style={styles.columnWrapper}>
+                    <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+                    <View style={styles.productWrapper}><ProductCardSkeleton variant="modern" /></View>
+                  </View>
                 </View>
               ) : (
-                <FlatList
-                  data={filteredProducts}
-                  keyExtractor={(item) => item.id.toString()}
-                  numColumns={2}
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={styles.listContainer}
-                  columnWrapperStyle={styles.columnWrapper}
-                  renderItem={useCallback(({ item }) => (
-                    <View style={styles.productWrapper}>
-                      <ProductCard 
-                        product={item} 
-                        width="100%" 
-                        variant="modern"
-                        style={{ marginHorizontal: 0, marginBottom: 12 }} 
-                      />
-                    </View>
-                  ), [])}
-                  initialNumToRender={6}
-                  maxToRenderPerBatch={10}
-                  windowSize={5}
-                  removeClippedSubviews={true}
+                <Animated.View style={{ flex: 1, opacity: productsFadeAnim }}>
+                  <FlatList
+                    data={filteredProducts}
+                    keyExtractor={(item) => item.id.toString()}
+                    numColumns={2}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.listContainer}
+                    columnWrapperStyle={styles.columnWrapper}
+                    renderItem={renderProductItem}
+                    initialNumToRender={6}
+                    maxToRenderPerBatch={10}
+                    windowSize={5}
+                    removeClippedSubviews={true}
 
-                  ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                      <Icon name="basket-outline" size={60} color={theme.colors.textTertiary} />
-                      <Text style={[styles.emptyText, { color: theme.colors.text }]}>
-                        No Products Found
-                      </Text>
-                      <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
-                        Try adjusting your filters or search query.
-                      </Text>
-                    </View>
-                  }
-                />
+                    ListEmptyComponent={
+                      <View style={styles.emptyContainer}>
+                        <Icon name="basket-outline" size={60} color={theme.colors.textTertiary} />
+                        <Text style={[styles.emptyText, { color: theme.colors.text }]}>
+                          No Products Found
+                        </Text>
+                        <Text style={[styles.emptySubtitle, { color: theme.colors.textSecondary }]}>
+                          Try adjusting your filters or search query.
+                        </Text>
+                      </View>
+                    }
+                  />
+                </Animated.View>
               )}
             </View>
-          </>
+          </Animated.View>
         )}
-        </View>
-
+        
         <DynamicCartBar 
           visible={getCartCount() > 0} 
           cartCount={getCartCount()} 

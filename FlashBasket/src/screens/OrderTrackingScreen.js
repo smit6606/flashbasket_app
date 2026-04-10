@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Alert, TextInput, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTheme } from '../constants/ThemeContext';
 import orderService from '../services/orderService';
-import Animated, { FadeInDown, FadeInUp, Layout } from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeInUp, Layout, ZoomIn } from 'react-native-reanimated';
+import Skeleton from '../components/common/Skeleton';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OrderTrackingScreen = ({ route, navigation }) => {
   const { orderId } = route.params;
@@ -42,16 +45,19 @@ const OrderTrackingScreen = ({ route, navigation }) => {
     return (
       <View style={styles.statusRow}>
         <View style={styles.indicatorCol}>
-          <View style={[
-            styles.circle, 
-            { backgroundColor: isCompleted ? theme.colors.primary : theme.colors.border }
-          ]}>
+          <Animated.View 
+            entering={ZoomIn.duration(500)}
+            style={[
+              styles.circle, 
+              { backgroundColor: isCompleted ? theme.colors.primary : theme.colors.border }
+            ]}
+          >
             <Icon 
               name={isCompleted ? "checkmark" : "ellipse-outline"} 
               size={14} 
               color={isCompleted ? "#fff" : theme.colors.textSecondary} 
             />
-          </View>
+          </Animated.View>
           {!isLast && <View style={[
             styles.line, 
             { backgroundColor: isCompleted && idx < currentIdx ? theme.colors.primary : theme.colors.border }
@@ -77,18 +83,32 @@ const OrderTrackingScreen = ({ route, navigation }) => {
 
   if (loading) {
     return (
-      <View style={[styles.loader, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </View>
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <View style={styles.header}>
+           <Skeleton width={100} height={20} borderRadius={10} />
+           <Skeleton width={30} height={30} borderRadius={15} />
+        </View>
+        <View style={styles.scrollContainer}>
+           <Skeleton width={SCREEN_WIDTH - 32} height={120} borderRadius={24} style={{ marginBottom: 24 }} />
+           <Skeleton width={150} height={24} borderRadius={4} style={{ marginBottom: 25 }} />
+           {[1, 2, 3, 4].map((i) => (
+             <View key={i} style={{ flexDirection: 'row', marginBottom: 30 }}>
+                <Skeleton width={24} height={24} borderRadius={12} />
+                <View style={{ marginLeft: 18, flex: 1 }}>
+                   <Skeleton width="60%" height={20} borderRadius={4} style={{ marginBottom: 8 }} />
+                   <Skeleton width="90%" height={15} borderRadius={4} />
+                </View>
+             </View>
+           ))}
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={[styles.header, { backgroundColor: theme.colors.background }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Icon name="arrow-back" size={24} color={theme.colors.text} />
-        </TouchableOpacity>
+        <View style={{ width: 40 }} />
         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>Live Tracking</Text>
         <TouchableOpacity onPress={fetchOrderDetails}>
           <Icon name="refresh" size={24} color={theme.colors.text} />
@@ -161,7 +181,7 @@ const OrderTrackingScreen = ({ route, navigation }) => {
         {order?.status === 'Delivered' && (
            <TouchableOpacity 
              style={[styles.rateBtn, { borderColor: theme.colors.primary }]}
-             onPress={() => navigation.navigate('Home')}
+             onPress={() => navigation.navigate('BottomTabs', { screen: 'Home' })}
            >
              <Text style={[styles.rateBtnText, { color: theme.colors.primary }]}>Back to Home</Text>
            </TouchableOpacity>

@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
 
   const loadStoredData = async () => {
     console.log('[Auth] Loading stored session...');
+    const startTime = Date.now();
     try {
       const storedToken = await AsyncStorage.getItem('token');
       const storedUser = await AsyncStorage.getItem('user');
@@ -37,7 +38,6 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('[Auth] Error loading auth data from storage:', error);
     } finally {
-      console.log('[Auth] Loading state set to false');
       setLoading(false);
     }
   };

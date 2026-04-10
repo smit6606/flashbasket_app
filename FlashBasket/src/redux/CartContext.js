@@ -11,7 +11,7 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [cart, setCart] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isAuthenticated);
   const [error, setError] = useState(null);
   const syncTimeouts = useRef({}); // Track timeouts per productId
   const cartRef = useRef(cart);

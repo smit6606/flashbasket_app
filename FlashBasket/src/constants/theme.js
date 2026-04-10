@@ -8,7 +8,7 @@ export const COLORS = {
     primary: '#00b894',
     secondary: '#ff7675',
     accent: '#fdcb6e',
-    background: '#F5F5F5', // Soft gray for SafeArea
+    background: '#FFFFFF', // Clean White
     surface: '#ffffff',
     card: '#FFFFFF',
     text: '#1A1A1A',

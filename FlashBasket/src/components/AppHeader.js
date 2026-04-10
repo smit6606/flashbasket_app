@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../constants/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { useUser } from '../redux/UserContext';
 
-const AppHeader = ({ onLocationPress }) => {
+const AppHeader = memo(({ onLocationPress }) => {
   const { theme, isDark } = useTheme();
   const { selectedAddress, wallet } = useUser();
   const navigation = useNavigation();
@@ -15,6 +15,8 @@ const AppHeader = ({ onLocationPress }) => {
       <TouchableOpacity 
         style={styles.leftSection}
         onPress={onLocationPress}
+        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        activeOpacity={0.6}
       >
         <View style={styles.deliveryRow}>
           <MIcon name="lightning-bolt" size={24} color={isDark ? theme.colors.primary : "#000"} />
@@ -32,6 +34,7 @@ const AppHeader = ({ onLocationPress }) => {
         <TouchableOpacity 
           style={[styles.walletButton, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border, borderWidth: isDark ? 1 : 0 }]}
           onPress={() => navigation.navigate('WalletScreen')}
+          activeOpacity={0.7}
         >
           <View style={styles.walletIconContainer}>
             <MIcon name="wallet" size={18} color="#fff" />
@@ -42,13 +45,16 @@ const AppHeader = ({ onLocationPress }) => {
         <TouchableOpacity 
           style={styles.profileButton}
           onPress={() => navigation.navigate('Profile')}
+          activeOpacity={0.7}
         >
           <MIcon name="account-circle" size={32} color={theme.colors.text} />
         </TouchableOpacity>
       </View>
     </View>
   );
-};
+});
+
+AppHeader.displayName = 'AppHeader';
 
 const styles = StyleSheet.create({
   container: {
@@ -56,7 +62,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
     paddingVertical: 10,
   },
   leftSection: {

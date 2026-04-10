@@ -19,6 +19,8 @@ import MapScreen from '../screens/MapScreen';
 import OfferScreen from '../screens/OfferScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import SearchScreen from '../screens/SearchScreen';
+import BuyAgainScreen from '../screens/BuyAgainScreen';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +45,7 @@ const MainAppNavigator = () => {
       <Stack.Screen name="MapScreen" component={MapScreen} />
       <Stack.Screen name="OfferScreen" component={OfferScreen} />
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="BuyAgainScreen" component={BuyAgainScreen} />
     </Stack.Navigator>
   );
 };

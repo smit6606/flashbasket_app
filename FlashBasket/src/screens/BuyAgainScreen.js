@@ -7,9 +7,9 @@ import MIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ProductCard from '../components/ProductCard';
 import orderService from '../services/orderService';
 import categoryService from '../services/categoryService';
-import Animated, { FadeInRight } from 'react-native-reanimated';
 import { useCart } from '../redux/CartContext';
 import DynamicCartBar from '../components/DynamicCartBar';
+import { BuyAgainSkeleton } from '../components/common/SkeletonComponents';
 
 const BuyAgainScreen = ({ navigation }) => {
   const { theme, isDark } = useTheme();
@@ -111,9 +111,7 @@ const BuyAgainScreen = ({ navigation }) => {
       </View>
 
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
+        <BuyAgainSkeleton />
       ) : error ? (
         <View style={styles.center}>
           <Icon name="alert-circle-outline" size={48} color={theme.colors.error} />
@@ -136,12 +134,11 @@ const BuyAgainScreen = ({ navigation }) => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[theme.colors.primary]} />
           }
           renderItem={({ item, index }) => (
-            <Animated.View 
-              entering={FadeInRight.delay(index * 50)}
+            <View 
               style={styles.productWrapper}
             >
               <ProductCard product={item} />
-            </Animated.View>
+            </View>
           )}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>

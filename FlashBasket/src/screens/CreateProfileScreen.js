@@ -29,9 +29,8 @@ const CreateProfileScreen = ({ route, navigation }) => {
         payload.referredBy = referredBy.trim().toUpperCase();
       }
       const response = await updateProfile(payload);
-      if (response) { // updateProfile returns the created user object if successful
-        navigation.replace('Main');
-      }
+      // Note: AuthContext update inside updateProfile will automatically trigger 
+      // navigation to 'Main' via AppNavigation's conditional rendering.
     } catch (error) {
       Alert.alert('Error', 'Failed to create profile. Please try again.');
     } finally {
